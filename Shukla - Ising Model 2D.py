@@ -193,7 +193,6 @@ def sweep_0NN(lat_i_0NN, h_min_0NN, h_max_0NN, T_min_0NN, T_max_0NN, MC_iter_0NN
     T_step_0NN = float((T_max_0NN - T_min_0NN) / points_0NN)
     
     for point_0NN in xrange(points_0NN + 1):
-        #(collec, therm_steps, mag_field, couplx, couply, t)
         now_lat_0NN = MC_thermal(lat_i_0NN, therm_steps_0NN, h_now_0NN, 0.0, 0.0, T_now_0NN)
         MC_results_now_0NN = many_MC(now_lat_0NN, MC_iter_0NN, h_now_0NN, 0.0, 0.0, T_now_0NN)
         ideal_vals_now_0NN = ideal_vals_0NN(T_now_0NN, h_now_0NN)
