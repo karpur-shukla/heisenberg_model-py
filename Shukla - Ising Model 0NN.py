@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 ''' Here, we create a static 2D N-by-M Ising grid of spins up and down, an update mechanism to
     update the spin at every site, and finally include the presence of an external magnetic field in
-    the grids.'''
+    the grids. We're specifically looking at the two-state Ising model, i.e. with spins ±1/2, but
+    with no inter-site coupling.'''
 
 
 # This section imports the libraries necessary to run the program.
