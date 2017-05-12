@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
+
 ''' Here, we create a static 2D N-by-M Ising grid of spins up and down, an update mechanism to
     update the spin at every site, and finally include the presence of an inter-spin coupling and an
     external magnetic field in the grids. This script then performs a histogram analysis of the
     lattices generated. This is part of an attempt to recreate the weighted histogram analysis
     method (WHAM) seen in A. Ferrenberg & R. Swendsen, Phys. Rev. Lett. 61, 23 (1988) and
-    A. Ferrenberg & R. Swendsen, Phys. Rev. Lett. 63, 12 (1989).'''
+    A. Ferrenberg & R. Swendsen, Phys. Rev. Lett. 63, 12 (1989). We're specifically looking at the
+    two-state Ising model, i.e. with spins ±1/2.'''
 
 
 # This section imports the libraries necessary to run the program.
