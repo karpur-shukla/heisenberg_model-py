@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 ''' Here, we create a static 2D N-by-M Ising grid of spins up and down, an update mechanism to
     update the spin at every site, and finally include the presence of an inter-spin coupling and an
-    external magnetic field in the grids.'''
+    external magnetic field in the grids. We're specifically looking at the two-state Ising model,
+    i.e. with spins ±1/2.'''
 
 
 # This section imports the libraries necessary to run the program.
@@ -26,9 +29,9 @@ x_len = 8              # x_len is the number of sites in each row.
 y_len = 8              # y_len is the number of rows in each column.
 size = x_len * y_len   # size simply keeps the total number of sites handy.
 
-MC_num = 10000       # MC_num is the number of Monte Carlo updates.
+MC_num = 1000000       # MC_num is the number of Monte Carlo updates.
 sweeps = 50            # sweeps is the number of parameter sweeps.
-MC_therm_steps = 100 # MC_therm_steps is the number of initial thermalisation steps.
+MC_therm_steps = 10000 # MC_therm_steps is the number of initial thermalisation steps.
 
 h_start = 0.0          # h_start is the starting external field.
 h_end = 0.0            # h_end is the ending external field.
