@@ -97,15 +97,15 @@ def MC_update(grid, h, Jx, Jy, T):
         for x in xrange(x_size):
             dE = 0.0
             dE += h * grid[y][x]
-            dE += Jx * grid[y][(x-1)%x_size] * grid[y][x]
-            dE += Jx * grid[y][(x+1)%x_size] * grid[y][x]
-            dE += Jy * grid[(y-1)%y_size][x] * grid[y][x]
-            dE += Jy * grid[(y+1)%y_size][x] * grid[y][x]
+            dE += Jx * grid[y][(x-1) % x_size] * grid[y][x]
+            dE += Jx * grid[y][(x+1) % x_size] * grid[y][x]
+            dE += Jy * grid[(y-1) % y_size][x] * grid[y][x]
+            dE += Jy * grid[(y+1) % y_size][x] * grid[y][x]
             if random.random() < math.exp(-2*b*dE):
                 grid[y][x] = -grid[y][x]
             grid_M += grid[y][x]
-            grid_E += Jx * grid[y][(x-1)%x_size] * grid[y][x]
-            grid_E += Jy * grid[(y-1)%y_size][x] * grid[y][x]
+            grid_E += Jx * grid[y][(x-1) % x_size] * grid[y][x]
+            grid_E += Jy * grid[(y-1) % y_size][x] * grid[y][x]
 
     return (grid, grid_M, grid_E)
 
