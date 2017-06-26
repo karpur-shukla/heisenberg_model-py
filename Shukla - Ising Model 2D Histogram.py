@@ -84,10 +84,10 @@ def MC_update(lat, h, Jx, Jy, T):
         for x in xrange(x_size):
             dE = 0.0
             dE += h * lat[y][x]
-            dE += Jx * lat[y][(x-1)%x_size] * lat[y][x]
-            dE += Jx * lat[y][(x+1)%x_size] * lat[y][x]
-            dE += Jy * lat[(y-1)%y_size][x] * lat[y][x]
-            dE += Jy * lat[(y+1)%y_size][x] * lat[y][x]
+            dE += Jx * lat[y][(x-1) % x_size] * lat[y][x]
+            dE += Jx * lat[y][(x+1) % x_size] * lat[y][x]
+            dE += Jy * lat[(y-1) % y_size][x] * lat[y][x]
+            dE += Jy * lat[(y+1) % y_size][x] * lat[y][x]
             if random.random() < math.exp(-2*beta*dE):
                 lat[y][x] = -lat[y][x]
 
@@ -117,8 +117,8 @@ def lat_props(trel, mu, ccx, ccy, temp):
         for x_pt in xrange(x_size):
             net_M += trel[y_pt][x_pt]
             net_E += -mu * trel[y_pt][x_pt]
-            net_E += -ccx * trel[y_pt][(x_pt+1)%x_size] * trel[y_pt][x_pt]
-            net_E += -ccy * trel[(y_pt+1)%y_size][x_pt] * trel[y_pt][x_pt]
+            net_E += -ccx * trel[y_pt][(x_pt+1) % x_size] * trel[y_pt][x_pt]
+            net_E += -ccy * trel[(y_pt+1) % y_size][x_pt] * trel[y_pt][x_pt]
 
     lat_m = net_M/sites
     lat_e = net_E/sites
