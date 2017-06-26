@@ -66,14 +66,14 @@ def print_grid(grating):
 
         for entry in chain:
             if entry == -1.0:
-                IG_single_row.append("-")
+                IG_single_row += ["-"]
             elif entry == +1.0:
-                IG_single_row.append("+")
+                IG_single_row += ["+"]
             else:
                 raise ArithmeticError("Ising spin must be +1.0 or -1.0")
 
         IG_single_row_printed = " ".join(IG_single_row)
-        Ising_grid_printed.append(IG_single_row_printed)
+        Ising_grid_printed += [IG_single_row_printed]
 
     for IG_row in Ising_grid_printed:
         print IG_row
@@ -201,7 +201,7 @@ def many_MC_updates(array, MC_iter, ext_field, cc_x, cc_y, tepl):
     cv = (math.pow(b, 2) * (avg_E2 - math.pow(avg_E, 2))) / array_sites. '''
 
 
-#This function lets us sweep our MC simulation over different values of the magnetic moment, h.
+# This function lets us sweep our MC simulation over different values of the magnetic moment, h.
 def h_sweep(grid, h_min, h_max, sweep_Jx, sweep_Jy, sweep_T, MC_steps, points, h_therm_steps):
     h_sweep_m_vals = []
     h_sweep_e_vals = []
@@ -224,30 +224,26 @@ def h_sweep(grid, h_min, h_max, sweep_Jx, sweep_Jy, sweep_T, MC_steps, points, h
         
             ideal_m_now = math.tanh(sweep_b*h_now)
             m_diff_now = MC_results_now[3] - ideal_m_now
-            h_now_m_vals = [sweep_T, h_now, MC_results_now[3], ideal_m_now, m_diff_now]
-            h_sweep_m_vals.append(h_now_m_vals)
+            h_sweep_m_vals += [[sweep_T, h_now, MC_results_now[3], ideal_m_now, m_diff_now]]
 
             ideal_e_now = -h_now * math.tanh(sweep_b*h_now)
             e_diff_now = MC_results_now[7] - ideal_e_now
-            h_now_e_vals = [sweep_T, h_now, MC_results_now[7], ideal_e_now, e_diff_now]
-            h_sweep_e_vals.append(h_now_e_vals)
+            h_sweep_e_vals += [[sweep_T, h_now, MC_results_now[7], ideal_e_now, e_diff_now]]
 
             ideal_susc_now = sweep_b * math.pow(1/math.cosh(sweep_b*h_now), 2)
             susc_diff_now = MC_results_now[9] - ideal_susc_now
-            h_now_susc_vals = [sweep_T, h_now, MC_results_now[9], ideal_susc_now, susc_diff_now]
-            h_sweep_susc_vals.append(h_now_susc_vals)
+            h_sweep_susc_vals += [[sweep_T, h_now, MC_results_now[9], ideal_susc_now, susc_diff_now]]
 
             ideal_cv_now = math.pow(sweep_b, 2) * math.pow(h_now, 2) * math.pow(1/math.cosh(sweep_b*h_now), 2)
             cv_diff_now = MC_results_now[10] - ideal_cv_now
-            h_now_cv_vals = [sweep_T, h_now, MC_results_now[10], ideal_cv_now, cv_diff_now]
-            h_sweep_cv_vals.append(h_now_cv_vals)
+            h_sweep_cv_vals += [[sweep_T, h_now, MC_results_now[10], ideal_cv_now, cv_diff_now]]
 
             h_now += h_step
 
     return (h_sweep_m_vals, h_sweep_e_vals, h_sweep_susc_vals, h_sweep_cv_vals)
 
 
-#This function lets us sweep our MC simulation over different values of the temperature.
+# This function lets us sweep our MC simulation over different values of the temperature.
 def T_sweep(lat_in, T_min, T_max, spect_h, spect_Jx, spect_Jy, MC_num, points, T_therm_steps):
     T_sweep_mag_vals = []
     T_sweep_ener_vals = []
@@ -270,23 +266,19 @@ def T_sweep(lat_in, T_min, T_max, spect_h, spect_Jx, spect_Jy, MC_num, points, T
         
             ideal_mag_now = math.tanh(b_curr*spect_h)
             mag_diff_now = MC_results_now[3] - ideal_mag_now
-            T_now_mag_vals = [T_curr, spect_h, MC_results_now[3], ideal_mag_now, mag_diff_now]
-            T_sweep_mag_vals.append(T_now_mag_vals)
+            T_sweep_mag_vals += [[T_curr, spect_h, MC_results_now[3], ideal_mag_now, mag_diff_now]]
 
             ideal_ener_now = -spect_h * math.tanh(b_curr*spect_h)
             ener_diff_now = MC_results_now[7] - ideal_ener_now
-            T_now_ener_vals = [T_curr, spect_h, MC_results_now[7], ideal_ener_now, ener_diff_now]
-            T_sweep_ener_vals.append(T_now_ener_vals)
+            T_sweep_ener_vals += [[T_curr, spect_h, MC_results_now[7], ideal_ener_now, ener_diff_now]]
 
             ideal_chi_now = b_curr * math.pow(1/math.cosh(b_curr*spect_h), 2)
             chi_diff_now = MC_results_now[9] - ideal_chi_now
-            T_now_chi_vals = [T_curr, spect_h, MC_results_now[9], ideal_chi_now, chi_diff_now]
-            T_sweep_chi_vals.append(T_now_chi_vals)
+            T_sweep_chi_vals += [[T_curr, spect_h, MC_results_now[9], ideal_chi_now, chi_diff_now]]
 
             ideal_spec_heat_now = math.pow(b_curr, 2) * math.pow(spect_h, 2) * math.pow(1/math.cosh(b_curr*spect_h), 2)
             spec_heat_diff_now = MC_results_now[10] - ideal_spec_heat_now
-            T_now_spec_heat_vals = [T_curr, spect_h, MC_results_now[10], ideal_spec_heat_now, spec_heat_diff_now]
-            T_sweep_spec_heat_vals.append(T_now_spec_heat_vals)
+            T_sweep_spec_heat_vals += [[T_curr, spect_h, MC_results_now[10], ideal_spec_heat_now, spec_heat_diff_now]]
             T_curr += T_step
 
     return (T_sweep_mag_vals, T_sweep_ener_vals, T_sweep_chi_vals, T_sweep_spec_heat_vals)
