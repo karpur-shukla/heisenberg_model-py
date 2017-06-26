@@ -70,14 +70,14 @@ def print_grid(grating):
 
         for entry in chain:
             if entry == -1.0:
-                IG_single_row.append("-")
+                IG_single_row += ["-"]
             elif entry == +1.0:
-                IG_single_row.append("+")
+                IG_single_row += ["+"]
             else:
                 raise ArithmeticError("Ising spin must be +1.0 or -1.0")
 
         IG_single_row_printed = " ".join(IG_single_row)
-        Ising_grid_printed.append(IG_single_row_printed)
+        Ising_grid_printed += [IG_single_row_printed]
 
     for IG_row in Ising_grid_printed:
         print IG_row
@@ -148,8 +148,8 @@ def many_MC(lat, MC_iter, mu, cc_x, cc_y, t):
         now_update = MC_update(lat, mu, cc_x, cc_y, t)
         now_lat = now_update[0]
         
-        MC_M.append(now_update[1])
-        MC_E.append(now_update[2])
+        MC_M += [now_update[1]]
+        MC_E += [now_update[2]]
     
     avg_M = numpy.mean(MC_M, axis = None)
     avg_m = float(avg_M / sites)
@@ -202,23 +202,19 @@ def sweep_0NN(lat_i_0NN, h_min_0NN, h_max_0NN, T_min_0NN, T_max_0NN, MC_iter_0NN
 
         ideal_m_now_0NN = ideal_vals_now_0NN[0]
         m_diff_now_0NN = ideal_m_now_0NN - MC_results_now_0NN[2]
-        m_vals_now_0NN = [T_now_0NN, h_now_0NN, ideal_m_now_0NN, m_diff_now_0NN]
-        sweep_0NN_m_vals.append(m_vals_now_0NN)
+        sweep_0NN_m_vals += [[T_now_0NN, h_now_0NN, ideal_m_now_0NN, m_diff_now_0NN]]
 
         ideal_u_now_0NN = ideal_vals_now_0NN[1]
         u_diff_now_0NN = ideal_u_now_0NN - MC_results_now_0NN[4]
-        u_vals_now_0NN = [T_now_0NN, h_now_0NN, ideal_u_now_0NN, u_diff_now_0NN]
-        sweep_0NN_u_vals.append(u_vals_now_0NN)
+        sweep_0NN_u_vals += [[T_now_0NN, h_now_0NN, ideal_u_now_0NN, u_diff_now_0NN]]
 
         ideal_chi_now_0NN = ideal_vals_now_0NN[2]
         chi_diff_now_0NN = ideal_chi_now_0NN - MC_results_now_0NN[5]
-        chi_vals_now_0NN = [T_now_0NN, h_now_0NN, ideal_chi_now_0NN, chi_diff_now_0NN]
-        sweep_0NN_chi_vals.append(chi_vals_now_0NN)
+        sweep_0NN_chi_vals += [[T_now_0NN, h_now_0NN, ideal_chi_now_0NN, chi_diff_now_0NN]]
 
         ideal_cv_now_0NN = ideal_vals_now_0NN[3]
         cv_diff_now_0NN = ideal_cv_now_0NN - MC_results_now_0NN[6]
-        cv_vals_now_0NN = [T_now_0NN, h_now_0NN, ideal_cv_now_0NN, cv_diff_now_0NN]
-        sweep_0NN_cv_vals.append(cv_vals_now_0NN)
+        sweep_0NN_cv_vals += [[T_now_0NN, h_now_0NN, ideal_cv_now_0NN, cv_diff_now_0NN]]
 
         h_now_0NN += h_step_0NN
         T_now_0NN += T_step_0NN
@@ -245,7 +241,7 @@ def sweep_1NN(lat_i_1NN, h_min_1NN, h_max_1NN, Jx_min_1NN, Jx_max_1NN, Jy_min_1N
         curr_lat_1NN = MC_thermal(lat_i_1NN, therm_steps_1NN, h_now_1NN, Jx_now_1NN, Jy_now_1NN, T_now_1NN)
         MC_results_now_1NN = many_MC(curr_lat_1NN, MC_iter_1NN, h_now_1NN, Jx_now_1NN, Jy_now_1NN, T_now_1NN)
         results_now = [T_now_1NN, h_now_1NN, Jx_now_1NN, Jy_now_1NN, MC_results_now_1NN[2], MC_results_now_1NN[4], MC_results_now_1NN[5], MC_results_now_1NN[6]]
-        sweep_vals.append(results_now)
+        sweep_vals += [results_now]
         
         h_now_1NN += h_step_1NN
         Jx_now_1NN += Jx_step_1NN
