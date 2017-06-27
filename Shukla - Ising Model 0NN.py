@@ -29,11 +29,11 @@ x_len = 8                    # x_len is the length of each row in the 2D grid.
 y_len = 8                    # y_len is the number of rows in the 2D grid.
 size = x_len * y_len         # size is the size of the array.
 
-MC_sweeps = 1000000          # MC_sweeps is the number of Monte Carlo sweeps.
-MC_therm_steps = 10000       # MC_therm_steps is the number of initial thermalisation steps.
+MC_sweeps = 1000          # MC_sweeps is the number of Monte Carlo sweeps.
+MC_therm_steps = 100       # MC_therm_steps is the number of initial thermalisation steps.
 
-h_start = -5.0               # h_start is the starting external field.
-h_end = 5.0                  # h_end is the ending external field.
+h_start = 5.0               # h_start is the starting external field.
+h_end = -5.0                  # h_end is the ending external field.
 
 T_start = 1.0                # T_start is the starting temperature in multiples of Tc (the critical temperature).
 T_end = 1.0                  # T_end is the ending temperature.
@@ -60,10 +60,10 @@ initial_grid = numpy.random.choice([-1, 1], size = [y_len, x_len])
 # This function provides a printed version of the 2D Ising grid.
 def print_grid(grating):
     Ising_grid_printed = []
-
+    
     for chain in grating:
         IG_single_row = []
-
+        
         for entry in chain:
             if entry == -1.0:
                 IG_single_row += ["-"]
@@ -71,10 +71,10 @@ def print_grid(grating):
                 IG_single_row += ["+"]
             else:
                 raise ArithmeticError("Ising spin must be +1.0 or -1.0")
-
+        
         IG_single_row_printed = " ".join(IG_single_row)
         Ising_grid_printed += [IG_single_row_printed]
-
+    
     for IG_row in Ising_grid_printed:
         print IG_row
     
@@ -86,7 +86,7 @@ def MC_update(lat, h, Jx, Jy, T):
     x_len = len(lat[0])
     y_len = len(lat)
     beta = 1.0/T
-
+    
     for y_pos in xrange(y_len):
         for x_pos in xrange(x_len):
             dE = 0.0
@@ -97,7 +97,7 @@ def MC_update(lat, h, Jx, Jy, T):
             dE += Jy * lat[(y_pos+1)%y_len][x_pos] * lat[y_pos][x_pos]
             if random.random() <= math.exp(-2*beta*dE):
                 lat[y_pos][x_pos] = -lat[y_pos][x_pos]
- 
+    
     return lat
 
 ''' Following Swendsen's remark, I'll exploit the fact that exp(0) = 1 and that P = exp(-beta*E),
@@ -131,27 +131,27 @@ def lat_props(trel, mu, ccx, ccy, temp):
     x_size = len(trel[0])
     y_size = len(trel)
     sites = float(x_size * y_size)
-
+    
     for y_pt in xrange(y_size):
         for x_pt in xrange(x_size):
             net_M += trel[y_pt][x_pt]
             net_E += -mu * trel[y_pt][x_pt]
             net_E += -ccx * trel[y_pt][(x_pt+1)%x_size] * trel[y_pt][x_pt]
             net_E += -ccy * trel[(y_pt+1)%y_size][x_pt] * trel[y_pt][x_pt]
-
+    
     lat_m = net_M/sites
     lat_e = net_E/sites
-
+    
     return (net_M, lat_m, net_E, lat_e)
 
 
 # This function performs the MC thermalisation.
 def MC_thermal(collec, therm_steps, mag_field, couplx, couply, t):
     now_collec = collec
-
+    
     for indiv_step in xrange(therm_steps):
         now_collec = MC_update(now_collec, mag_field, couplx, couply, t)        
-
+    
     return now_collec
 
 
@@ -165,13 +165,13 @@ def many_MC_updates(array, MC_iter, ext_field, cc_x, cc_y, tepl):
     MC_E2 = 0.0
     MC_e = 0.0
     MC_e2 = 0.0
-
+    
     now_grid = array
     array_x_size = len(array[0])
     array_y_size = len(array)
     array_sites = float(array_x_size * array_y_size)
     b = 1.0/tepl
-
+    
     for indiv_step in xrange(MC_iter):
         now_grid = MC_update(now_grid, ext_field, cc_x, cc_y, tepl)        
         now_props = lat_props(now_grid, ext_field, cc_x, cc_y, tepl)
@@ -183,7 +183,7 @@ def many_MC_updates(array, MC_iter, ext_field, cc_x, cc_y, tepl):
         MC_E2 += math.pow(now_props[2], 2)
         MC_e += now_props[3]
         MC_e2 += math.pow(now_props[3], 2)
-
+    
     avg_M = float(MC_M/MC_iter)
     avg_M2 = float(MC_M2/MC_iter)
     avg_m = float(MC_m/MC_iter)
@@ -192,17 +192,24 @@ def many_MC_updates(array, MC_iter, ext_field, cc_x, cc_y, tepl):
     avg_E2 = float(MC_E2/MC_iter)
     avg_e = float(MC_e/MC_iter)
     avg_e2 = float(MC_e2/MC_iter)
-    susc = b * (avg_m2 - math.pow(avg_m, 2)) * array_sites
+    if ext_field != 0.0:
+        susc = b * (avg_m2 - math.pow(avg_m, 2)) * array_sites
+    else:
+        susc = b * (avg_m2 - math.pow(avg_m, 2))
     cv = (math.pow(b, 2) * (avg_e2 - math.pow(avg_e, 2))) * array_sites
-
+    
     return (now_grid, avg_M, avg_M2, avg_m, avg_m2, avg_E, avg_E2, avg_e, avg_e2, susc, cv)
 
-''' To write cv in terms of the total energy rather than the per-site energy, we have:
+''' We need to do this for the susceptibility in the case of h = 0 because in this specific case, we
+    have no interactions whatsoever. Thus, we're looking at the standard deviation of a set of ±1
+    values picked at random; since there's no scale dependence, multiplying by array_sites in this
+    specific case will give us an extraneous factor of array_sites. To write cv in terms of the
+    total energy rather than the per-site energy, we have:
     cv = (math.pow(b, 2) * (avg_E2 - math.pow(avg_E, 2))) / array_sites. '''
 
 
 # This function lets us sweep our MC simulation over different values of the magnetic moment, h.
-def h_sweep(grid, h_min, h_max, sweep_Jx, sweep_Jy, sweep_T, MC_steps, points, h_therm_steps):
+def h_sweep(grid_in, h_min, h_max, sweep_Jx, sweep_Jy, sweep_T, MC_steps, points, h_therm_steps):
     h_sweep_m_vals = []
     h_sweep_e_vals = []
     h_sweep_susc_vals = []
@@ -210,36 +217,61 @@ def h_sweep(grid, h_min, h_max, sweep_Jx, sweep_Jy, sweep_T, MC_steps, points, h
 
     h_step = float((h_max-h_min)/points)
     
-    if h_step <= 0.0:
-        raise ArithmeticError("sweep range must be a positive nonzero float")
+    if h_step == 0.0:
+        raise ArithmeticError("sweep range must be a nonzero float")
     
     else:
         h_now = h_min
         sweep_b = 1.0/sweep_T
-
-        while h_now <= h_max:
-            now_lat = MC_thermal(grid, h_therm_steps, h_min, sweep_Jx, sweep_Jy, sweep_T)
-            MC_results_now = many_MC_updates(now_lat, MC_steps, h_now, sweep_Jx, sweep_Jy, sweep_T)
-            now_lat = MC_results_now[0]
         
-            ideal_m_now = math.tanh(sweep_b*h_now)
-            m_diff_now = MC_results_now[3] - ideal_m_now
-            h_sweep_m_vals += [[sweep_T, h_now, MC_results_now[3], ideal_m_now, m_diff_now]]
-
-            ideal_e_now = -h_now * math.tanh(sweep_b*h_now)
-            e_diff_now = MC_results_now[7] - ideal_e_now
-            h_sweep_e_vals += [[sweep_T, h_now, MC_results_now[7], ideal_e_now, e_diff_now]]
-
-            ideal_susc_now = sweep_b * math.pow(1/math.cosh(sweep_b*h_now), 2)
-            susc_diff_now = MC_results_now[9] - ideal_susc_now
-            h_sweep_susc_vals += [[sweep_T, h_now, MC_results_now[9], ideal_susc_now, susc_diff_now]]
-
-            ideal_cv_now = math.pow(sweep_b, 2) * math.pow(h_now, 2) * math.pow(1/math.cosh(sweep_b*h_now), 2)
-            cv_diff_now = MC_results_now[10] - ideal_cv_now
-            h_sweep_cv_vals += [[sweep_T, h_now, MC_results_now[10], ideal_cv_now, cv_diff_now]]
-
-            h_now += h_step
-
+        if h_step > 0.0:
+            while h_now <= h_max:
+                now_lat = MC_thermal(grid_in, h_therm_steps, h_min, sweep_Jx, sweep_Jy, sweep_T)
+                MC_results_now = many_MC_updates(now_lat, MC_steps, h_now, sweep_Jx, sweep_Jy, sweep_T)
+                now_lat = MC_results_now[0]
+                
+                ideal_m_now = math.tanh(sweep_b*h_now)
+                m_diff_now = MC_results_now[3] - ideal_m_now
+                h_sweep_m_vals += [[sweep_T, h_now, MC_results_now[3], ideal_m_now, m_diff_now]]
+                
+                ideal_e_now = -h_now * math.tanh(sweep_b*h_now)
+                e_diff_now = MC_results_now[7] - ideal_e_now
+                h_sweep_e_vals += [[sweep_T, h_now, MC_results_now[7], ideal_e_now, e_diff_now]]
+                
+                ideal_susc_now = sweep_b * math.pow(1/math.cosh(sweep_b*h_now), 2)
+                susc_diff_now = MC_results_now[9] - ideal_susc_now
+                h_sweep_susc_vals += [[sweep_T, h_now, MC_results_now[9], ideal_susc_now, susc_diff_now]]
+                
+                ideal_cv_now = math.pow(sweep_b, 2) * math.pow(h_now, 2) * math.pow(1/math.cosh(sweep_b*h_now), 2)
+                cv_diff_now = MC_results_now[10] - ideal_cv_now
+                h_sweep_cv_vals += [[sweep_T, h_now, MC_results_now[10], ideal_cv_now, cv_diff_now]]
+                
+                h_now += h_step
+        
+        else:
+            while h_now >= h_max:
+                now_lat = MC_thermal(grid_in, h_therm_steps, h_min, sweep_Jx, sweep_Jy, sweep_T)
+                MC_results_now = many_MC_updates(now_lat, MC_steps, h_now, sweep_Jx, sweep_Jy, sweep_T)
+                now_lat = MC_results_now[0]
+                
+                ideal_m_now = math.tanh(sweep_b*h_now)
+                m_diff_now = MC_results_now[3] - ideal_m_now
+                h_sweep_m_vals += [[sweep_T, h_now, MC_results_now[3], ideal_m_now, m_diff_now]]
+                
+                ideal_e_now = -h_now * math.tanh(sweep_b*h_now)
+                e_diff_now = MC_results_now[7] - ideal_e_now
+                h_sweep_e_vals += [[sweep_T, h_now, MC_results_now[7], ideal_e_now, e_diff_now]]
+                
+                ideal_susc_now = sweep_b * math.pow(1/math.cosh(sweep_b*h_now), 2)
+                susc_diff_now = MC_results_now[9] - ideal_susc_now
+                h_sweep_susc_vals += [[sweep_T, h_now, MC_results_now[9], ideal_susc_now, susc_diff_now]]
+                
+                ideal_cv_now = math.pow(sweep_b, 2) * math.pow(h_now, 2) * math.pow(1/math.cosh(sweep_b*h_now), 2)
+                cv_diff_now = MC_results_now[10] - ideal_cv_now
+                h_sweep_cv_vals += [[sweep_T, h_now, MC_results_now[10], ideal_cv_now, cv_diff_now]]
+                
+                h_now += h_step
+    
     return (h_sweep_m_vals, h_sweep_e_vals, h_sweep_susc_vals, h_sweep_cv_vals)
 
 
@@ -249,39 +281,184 @@ def T_sweep(lat_in, T_min, T_max, spect_h, spect_Jx, spect_Jy, MC_num, points, T
     T_sweep_ener_vals = []
     T_sweep_chi_vals = []
     T_sweep_spec_heat_vals = []
-
+    
     T_step = float((T_max-T_min)/points)
     
     if T_step <= 0.0:
-        raise ArithmeticError("sweep range must be a positive nonzero float")
+        raise ArithmeticError("sweep range must be a nonzero float")
     
     else:
         T_curr = T_min
         b_curr = 1.0/T_curr
-
-        while T_curr <= T_max:
-            curr_lat = MC_thermal(lat_in, T_therm_steps, spect_h, spect_Jx, spect_Jy, T_min)
-            MC_results_now = many_MC_updates(curr_lat, MC_num, spect_h, spect_Jx, spect_Jy, T_curr)
-            curr_lat = MC_results_now[0]
         
-            ideal_mag_now = math.tanh(b_curr*spect_h)
-            mag_diff_now = MC_results_now[3] - ideal_mag_now
-            T_sweep_mag_vals += [[T_curr, spect_h, MC_results_now[3], ideal_mag_now, mag_diff_now]]
+        if T_step > 0.0:
+            while T_curr <= T_max:
+                curr_lat = MC_thermal(lat_in, T_therm_steps, spect_h, spect_Jx, spect_Jy, T_min)
+                MC_results_now = many_MC_updates(curr_lat, MC_num, spect_h, spect_Jx, spect_Jy, T_curr)
+                curr_lat = MC_results_now[0]
+                
+                ideal_mag_now = math.tanh(b_curr*spect_h)
+                mag_diff_now = MC_results_now[3] - ideal_mag_now
+                T_sweep_mag_vals += [[T_curr, MC_results_now[3], ideal_mag_now, mag_diff_now]]
+                
+                ideal_ener_now = -spect_h * math.tanh(b_curr*spect_h)
+                ener_diff_now = MC_results_now[7] - ideal_ener_now
+                T_sweep_ener_vals += [[T_curr, MC_results_now[7], ideal_ener_now, ener_diff_now]]
+                
+                ideal_chi_now = b_curr * math.pow(1/math.cosh(b_curr*spect_h), 2)
+                chi_diff_now = MC_results_now[9] - ideal_chi_now
+                T_sweep_chi_vals += [[T_curr, MC_results_now[9], ideal_chi_now, chi_diff_now]]
+                
+                ideal_spec_heat_now = math.pow(b_curr, 2) * math.pow(spect_h, 2) * math.pow(1/math.cosh(b_curr*spect_h), 2)
+                spec_heat_diff_now = MC_results_now[10] - ideal_spec_heat_now
+                T_sweep_spec_heat_vals += [[T_curr, MC_results_now[10], ideal_spec_heat_now, spec_heat_diff_now]]
+                T_curr += T_step
 
-            ideal_ener_now = -spect_h * math.tanh(b_curr*spect_h)
-            ener_diff_now = MC_results_now[7] - ideal_ener_now
-            T_sweep_ener_vals += [[T_curr, spect_h, MC_results_now[7], ideal_ener_now, ener_diff_now]]
-
-            ideal_chi_now = b_curr * math.pow(1/math.cosh(b_curr*spect_h), 2)
-            chi_diff_now = MC_results_now[9] - ideal_chi_now
-            T_sweep_chi_vals += [[T_curr, spect_h, MC_results_now[9], ideal_chi_now, chi_diff_now]]
-
-            ideal_spec_heat_now = math.pow(b_curr, 2) * math.pow(spect_h, 2) * math.pow(1/math.cosh(b_curr*spect_h), 2)
-            spec_heat_diff_now = MC_results_now[10] - ideal_spec_heat_now
-            T_sweep_spec_heat_vals += [[T_curr, spect_h, MC_results_now[10], ideal_spec_heat_now, spec_heat_diff_now]]
-            T_curr += T_step
-
+        else:
+            while T_curr >= T_max:
+                curr_lat = MC_thermal(lat_in, T_therm_steps, spect_h, spect_Jx, spect_Jy, T_min)
+                MC_results_now = many_MC_updates(curr_lat, MC_num, spect_h, spect_Jx, spect_Jy, T_curr)
+                curr_lat = MC_results_now[0]
+                
+                ideal_mag_now = math.tanh(b_curr*spect_h)
+                mag_diff_now = MC_results_now[3] - ideal_mag_now
+                T_sweep_mag_vals += [[T_curr, MC_results_now[3], ideal_mag_now, mag_diff_now]]
+                
+                ideal_ener_now = -spect_h * math.tanh(b_curr*spect_h)
+                ener_diff_now = MC_results_now[7] - ideal_ener_now
+                T_sweep_ener_vals += [[T_curr, MC_results_now[7], ideal_ener_now, ener_diff_now]]
+                
+                ideal_chi_now = b_curr * math.pow(1/math.cosh(b_curr*spect_h), 2)
+                chi_diff_now = MC_results_now[9] - ideal_chi_now
+                T_sweep_chi_vals += [[T_curr, MC_results_now[9], ideal_chi_now, chi_diff_now]]
+                
+                ideal_spec_heat_now = math.pow(b_curr, 2) * math.pow(spect_h, 2) * math.pow(1/math.cosh(b_curr*spect_h), 2)
+                spec_heat_diff_now = MC_results_now[10] - ideal_spec_heat_now
+                T_sweep_spec_heat_vals += [[T_curr, MC_results_now[10], ideal_spec_heat_now, spec_heat_diff_now]]
+                T_curr += T_step
+    
     return (T_sweep_mag_vals, T_sweep_ener_vals, T_sweep_chi_vals, T_sweep_spec_heat_vals)
+
+
+# This function lets us sweep our MC simulation over different values of the coupling constants.
+def coup_sweep(kattam_in, Jx_min, Jx_max, Jy_min, Jy_max, h_over_range, T_over_range, MC_pts, step_points, coup_therm_steps):
+    coup_sweep_mg_vals = []
+    coup_sweep_u_vals = []
+    coup_sweep_sscpt_vals = []
+    coup_sweep_spc_heat_vals = []
+    
+    Jx_step = float((Jx_max - Jx_min)/step_points)
+    Jy_step = float((Jy_max - Jy_min)/step_points)
+    
+    if Jx_step == 0.0 and Jy_step == 0.0:
+        raise ArithmeticError("sweep range must be a nonzero float")
+    
+    else:
+        Jx_jetzt = Jx_min
+        Jy_jetzt = Jy_min
+        b_over_range = 1.0/T_over_range
+        
+        if Jx_step >= 0.0 and Jy_step >= 0.0:
+            while Jx_jetzt <= Jx_max and Jy_jetzt <= Jy_max:
+                curr_kattam = MC_thermal(kattam_in, coup_therm_steps, h_over_range, Jx_jetzt, Jy_jetzt, T_over_range)
+                MC_results_now = many_MC_updates(curr_kattam, MC_pts, h_over_range, Jx_jetzt, Jy_jetzt, T_over_range)
+                curr_kattam = MC_results_now[0]
+                
+                ideal_mag_now = math.tanh(b_over_range*h_over_range)
+                mag_diff_now = MC_results_now[3] - ideal_mag_now
+                coup_sweep_mg_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[3], ideal_mag_now, mag_diff_now]]
+                
+                ideal_ener_now = -h_over_range * math.tanh(b_over_range*h_over_range)
+                ener_diff_now = MC_results_now[7] - ideal_ener_now
+                coup_sweep_u_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[7], ideal_ener_now, ener_diff_now]]
+                
+                ideal_chi_now = b_over_range * math.pow(1/math.cosh(b_over_range*h_over_range), 2)
+                chi_diff_now = MC_results_now[9] - ideal_chi_now
+                coup_sweep_sscpt_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[9], ideal_chi_now, chi_diff_now]]
+                
+                ideal_spec_heat_now = math.pow(b_over_range, 2) * math.pow(h_over_range, 2) * math.pow(1/math.cosh(b_over_range*h_over_range), 2)
+                spec_heat_diff_now = MC_results_now[10] - ideal_spec_heat_now
+                coup_sweep_spc_heat_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[10], ideal_spec_heat_now, spec_heat_diff_now]]
+                
+                Jx_jetzt += Jx_step
+                Jy_jetzt += Jy_step
+        
+        elif Jx_step >= 0.0 and Jy_step <= 0.0:
+            while Jx_jetzt <= Jx_max and Jy_jetzt >= Jy_max:
+                curr_kattam = MC_thermal(kattam_in, coup_therm_steps, h_over_range, Jx_jetzt, Jy_jetzt, T_over_range)
+                MC_results_now = many_MC_updates(curr_kattam, MC_pts, h_over_range, Jx_jetzt, Jy_jetzt, T_over_range)
+                curr_kattam = MC_results_now[0]
+                
+                ideal_mag_now = math.tanh(b_over_range*h_over_range)
+                mag_diff_now = MC_results_now[3] - ideal_mag_now
+                coup_sweep_mg_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[3], ideal_mag_now, mag_diff_now]]
+                
+                ideal_ener_now = -h_over_range * math.tanh(b_over_range*h_over_range)
+                ener_diff_now = MC_results_now[7] - ideal_ener_now
+                coup_sweep_u_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[7], ideal_ener_now, ener_diff_now]]
+                
+                ideal_chi_now = b_over_range * math.pow(1/math.cosh(b_over_range*h_over_range), 2)
+                chi_diff_now = MC_results_now[9] - ideal_chi_now
+                coup_sweep_sscpt_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[9], ideal_chi_now, chi_diff_now]]
+                
+                ideal_spec_heat_now = math.pow(b_over_range, 2) * math.pow(h_over_range, 2) * math.pow(1/math.cosh(b_over_range*h_over_range), 2)
+                spec_heat_diff_now = MC_results_now[10] - ideal_spec_heat_now
+                coup_sweep_spc_heat_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[10], ideal_spec_heat_now, spec_heat_diff_now]]
+                
+                Jx_jetzt += Jx_step
+                Jy_jetzt += Jy_step
+        
+        elif Jx_step <= 0.0 and Jy_step >= 0.0:
+            while Jx_jetzt >= Jx_max and Jy_jetzt <= Jy_max:
+                curr_kattam = MC_thermal(kattam_in, coup_therm_steps, h_over_range, Jx_jetzt, Jy_jetzt, T_over_range)
+                MC_results_now = many_MC_updates(curr_kattam, MC_pts, h_over_range, Jx_jetzt, Jy_jetzt, T_over_range)
+                curr_kattam = MC_results_now[0]
+                
+                ideal_mag_now = math.tanh(b_over_range*h_over_range)
+                mag_diff_now = MC_results_now[3] - ideal_mag_now
+                coup_sweep_mg_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[3], ideal_mag_now, mag_diff_now]]
+                
+                ideal_ener_now = -h_over_range * math.tanh(b_over_range*h_over_range)
+                ener_diff_now = MC_results_now[7] - ideal_ener_now
+                coup_sweep_u_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[7], ideal_ener_now, ener_diff_now]]
+                
+                ideal_chi_now = b_over_range * math.pow(1/math.cosh(b_over_range*h_over_range), 2)
+                chi_diff_now = MC_results_now[9] - ideal_chi_now
+                coup_sweep_sscpt_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[9], ideal_chi_now, chi_diff_now]]
+                
+                ideal_spec_heat_now = math.pow(b_over_range, 2) * math.pow(h_over_range, 2) * math.pow(1/math.cosh(b_over_range*h_over_range), 2)
+                spec_heat_diff_now = MC_results_now[10] - ideal_spec_heat_now
+                coup_sweep_spc_heat_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[10], ideal_spec_heat_now, spec_heat_diff_now]]
+                
+                Jx_jetzt += Jx_step
+                Jy_jetzt += Jy_step
+    
+        else:
+            while Jx_jetzt >= Jx_max and Jy_jetzt >= Jy_max:
+                curr_kattam = MC_thermal(kattam_in, coup_therm_steps, h_over_range, Jx_jetzt, Jy_jetzt, T_over_range)
+                MC_results_now = many_MC_updates(curr_kattam, MC_pts, h_over_range, Jx_jetzt, Jy_jetzt, T_over_range)
+                curr_kattam = MC_results_now[0]
+                
+                ideal_mag_now = math.tanh(b_over_range*h_over_range)
+                mag_diff_now = MC_results_now[3] - ideal_mag_now
+                coup_sweep_mg_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[3], ideal_mag_now, mag_diff_now]]
+                
+                ideal_ener_now = -h_over_range * math.tanh(b_over_range*h_over_range)
+                ener_diff_now = MC_results_now[7] - ideal_ener_now
+                coup_sweep_u_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[7], ideal_ener_now, ener_diff_now]]
+                
+                ideal_chi_now = b_over_range * math.pow(1/math.cosh(b_over_range*h_over_range), 2)
+                chi_diff_now = MC_results_now[9] - ideal_chi_now
+                coup_sweep_sscpt_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[9], ideal_chi_now, chi_diff_now]]
+                
+                ideal_spec_heat_now = math.pow(b_over_range, 2) * math.pow(h_over_range, 2) * math.pow(1/math.cosh(b_over_range*h_over_range), 2)
+                spec_heat_diff_now = MC_results_now[10] - ideal_spec_heat_now
+                coup_sweep_spc_heat_vals += [[Jx_jetzt, Jy_jetzt, MC_results_now[10], ideal_spec_heat_now, spec_heat_diff_now]]
+                
+                Jx_jetzt += Jx_step
+                Jy_jetzt += Jy_step
+    
+    return (coup_sweep_mg_vals, coup_sweep_u_vals, coup_sweep_sscpt_vals, coup_sweep_spc_heat_vals)
 
 
 # Here, we run the simulation. For testing, we also print the actual arrays; these commands are then commented out as necessary.
@@ -298,7 +475,7 @@ swept_h_e_grid = numpy.array(h_sweep_grids[1])
 swept_h_susc_grid = numpy.array(h_sweep_grids[2])
 swept_h_cv_grid = numpy.array(h_sweep_grids[3])
 
-swept_h_range = numpy.linspace(-5.0, 5.0, 10000, endpoint = True)
+swept_h_range = numpy.linspace(h_start, h_end, MC_sweeps * 1000, endpoint = True)
 
 swept_h_T = swept_h_m_grid[:,0]
 swept_h_ext_field = swept_h_m_grid[:,1]
