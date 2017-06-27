@@ -31,10 +31,10 @@ x_len = 8              # x_len is the number of sites in each row.
 y_len = 8              # y_len is the number of rows in each column.
 size = x_len * y_len   # size simply keeps the total number of sites handy.
 
-MC_num = 100000       # MC_num is the number of Monte Carlo updates.
+MC_num = 1000000       # MC_num is the number of Monte Carlo updates.
 sweeps = 100           # sweeps is the number of parameter sweeps.
 hist_bin_size = 1      # hist_bin_size is the size of the bins of the histograms.
-MC_therm_steps = 100 # MC_therm_steps is the number of initial thermalisation steps.
+MC_therm_steps = 10000 # MC_therm_steps is the number of initial thermalisation steps.
 
 h_hist = 0.0           # h_hist is the histogram external field.
 T_hist = 2.5           # T_hist is the histogram temperature.
