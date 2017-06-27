@@ -29,11 +29,11 @@ x_len = 8                    # x_len is the length of each row in the 2D grid.
 y_len = 8                    # y_len is the number of rows in the 2D grid.
 size = x_len * y_len         # size is the size of the array.
 
-MC_sweeps = 1000          # MC_sweeps is the number of Monte Carlo sweeps.
-MC_therm_steps = 100       # MC_therm_steps is the number of initial thermalisation steps.
+MC_sweeps = 1000000          # MC_sweeps is the number of Monte Carlo sweeps.
+MC_therm_steps = 10000       # MC_therm_steps is the number of initial thermalisation steps.
 
-h_start = 5.0               # h_start is the starting external field.
-h_end = -5.0                  # h_end is the ending external field.
+h_start = -5.0               # h_start is the starting external field.
+h_end = 5.0                  # h_end is the ending external field.
 
 T_start = 1.0                # T_start is the starting temperature in multiples of Tc (the critical temperature).
 T_end = 1.0                  # T_end is the ending temperature.
