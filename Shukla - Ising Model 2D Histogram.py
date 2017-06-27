@@ -31,16 +31,16 @@ x_len = 8              # x_len is the number of sites in each row.
 y_len = 8              # y_len is the number of rows in each column.
 size = x_len * y_len   # size simply keeps the total number of sites handy.
 
-MC_num = 1000000       # MC_num is the number of Monte Carlo updates.
+MC_num = 100000       # MC_num is the number of Monte Carlo updates.
 sweeps = 100           # sweeps is the number of parameter sweeps.
 hist_bin_size = 1      # hist_bin_size is the size of the bins of the histograms.
-MC_therm_steps = 10000 # MC_therm_steps is the number of initial thermalisation steps.
+MC_therm_steps = 100 # MC_therm_steps is the number of initial thermalisation steps.
 
 h_hist = 0.0           # h_hist is the histogram external field.
 T_hist = 2.5           # T_hist is the histogram temperature.
 b_hist = 1/T_hist      # b_hist is the value of beta corresponding to the histogram temperature.
 Jx_hist = 1.0          # Jx_hist is the histogram x-direction coupling constant.
-Jy_hist = 1.0          # Jy_hist is the histogram x-direction coupling constant.
+Jy_hist = 1.0          # Jy_hist is the histogram y-direction coupling constant.
 
 
 # This section creates the initial system, a static 2D array of spins (up or down).
@@ -225,6 +225,6 @@ print "                      "
 print "Program run time: %f seconds" % (total_program_time)
 print "Program run time per site per MC sweep: %6g seconds" % (total_program_time / (MC_num * sweeps * size))
 
-'''Note: To find out how long the program takes, we take the difference of time.clock() evaluated at
-   the beginning of the program and at the end of the program. Here, we take the time at the end of
-   the program, and define the total program time.'''
+''' Note: To find out how long the program takes, we take the difference of time.clock() evaluated at
+    the beginning of the program and at the end of the program. Here, we take the time at the end of
+    the program, and define the total program time.'''
