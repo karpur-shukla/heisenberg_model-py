@@ -18,10 +18,10 @@ import tabulate
 # This section stores the time at the start of the program.
 program_start_time = time.clock()
 
-'''Since we're interested in the amount of time the program will run in, we'll store the time at the
-   beginning of the program using time.clock(), and compare it to the time at the end (again using
-   time.clock(), applied to a different variable name. time.clock() just takes the time at a given
-   moment; it's up to us to store it properly.'''
+''' Since we're interested in the amount of time the program will run in, we'll store the time at the
+    beginning of the program using time.clock(), and compare it to the time at the end (again using
+    time.clock(), applied to a different variable name. time.clock() just takes the time at a given
+    moment; it's up to us to store it properly.'''
 
 
 # This section sets the simulation parameters.
@@ -35,23 +35,18 @@ MC_therm_steps = 10000 # MC_therm_steps is the number of initial thermalisation 
 
 h_start = 0.0          # h_start is the starting external field.
 h_end = 0.0            # h_end is the ending external field.
-h_hist = 0.0           # h_hist is the histogram external field.
 
 T_start = 0.1          # T_start is the starting temperature.
 T_end = 5.1            # T_end is the ending temperature.
-T_hist = 2.0           # T_hist is the histogram temperature.
 
 b_start = 1/T_start    # b_start is the value of beta corresponding to the starting temperature.
 b_end = 1/T_end        # b_end is the value of beta corresponding to the ending temperature.
-b_hist = 1/T_hist      # b_hist is the value of beta corresponding to the histogram temperature.
 
 Jx_start = 1.0         # Jx_start is the starting x-direction coupling constant.
 Jx_end = 1.0           # Jx_end is the ending x-direction coupling constant.
-Jx_hist = 1.0          # Jx_hist is the histogram x-direction coupling constant.
 
 Jy_start = 1.0         # Jy_start is the starting y-direction coupling constant.
 Jy_end = 1.0           # Jy_end is the ending y-direction coupling constant.
-Jy_hist = 1.0          # Jy_hist is the histogram x-direction coupling constant.
 
 
 # This section creates the initial system, a static 2D array of spins (up or down).
@@ -221,6 +216,9 @@ def sweep_0NN(lat_i_0NN, h_min_0NN, h_max_0NN, T_min_0NN, T_max_0NN, MC_iter_0NN
 
     return (sweep_0NN_m_vals, sweep_0NN_u_vals, sweep_0NN_chi_vals, sweep_0NN_cv_vals)
 
+''' This does provide information for the 0NN case if we chose to do 0NN stuff, but that really
+    should be handled by the 0NN script.'''
+
 
 # This function sweeps across values of the external field and temperature for the 1NN 2D case.
 def sweep_1NN(lat_i_1NN, h_min_1NN, h_max_1NN, Jx_min_1NN, Jx_max_1NN, Jy_min_1NN, Jy_max_1NN, T_min_1NN, T_max_1NN, MC_iter_1NN, points_1NN, therm_steps_1NN):
@@ -237,6 +235,7 @@ def sweep_1NN(lat_i_1NN, h_min_1NN, h_max_1NN, Jx_min_1NN, Jx_max_1NN, Jy_min_1N
     T_step_1NN = float((T_max_1NN - T_min_1NN) / points_1NN)
     
     point_1NN = 0
+    
     while point_1NN <= points_1NN:
         curr_lat_1NN = MC_thermal(lat_i_1NN, therm_steps_1NN, h_now_1NN, Jx_now_1NN, Jy_now_1NN, T_now_1NN)
         MC_results_now_1NN = many_MC(curr_lat_1NN, MC_iter_1NN, h_now_1NN, Jx_now_1NN, Jy_now_1NN, T_now_1NN)
@@ -315,6 +314,6 @@ print "                      "
 print "Program run time: %f seconds" % (total_program_time)
 print "Program run time per site per MC sweep: %6g seconds" % (total_program_time / (MC_num * sweeps * size))
 
-'''Note: To find out how long the program takes, we take the difference of time.clock() evaluated at
-   the beginning of the program and at the end of the program. Here, we take the time at the end of
-   the program, and define the total program time.'''
+''' Note: To find out how long the program takes, we take the difference of time.clock() evaluated at
+    the beginning of the program and at the end of the program. Here, we take the time at the end of
+    the program, and define the total program time.'''
