@@ -32,8 +32,8 @@ size = x_len * y_len         # size is the size of the array.
 MC_sweeps = 1000000          # MC_sweeps is the number of Monte Carlo sweeps.
 MC_therm_steps = 10000       # MC_therm_steps is the number of initial thermalisation steps.
 
-h_start = -5.0               # h_start is the starting external field.
-h_end = 5.0                  # h_end is the ending external field.
+h_start = 5.0                # h_start is the starting external field.
+h_end = -5.0                 # h_end is the ending external field.
 
 T_start = 1.0                # T_start is the starting temperature in multiples of Tc (the critical temperature).
 T_end = 1.0                  # T_end is the ending temperature.
@@ -232,19 +232,19 @@ def h_sweep(grid_in, h_min, h_max, sweep_Jx, sweep_Jy, sweep_T, MC_steps, points
                 
                 ideal_m_now = math.tanh(sweep_b*h_now)
                 m_diff_now = MC_results_now[3] - ideal_m_now
-                h_sweep_m_vals += [[sweep_T, h_now, MC_results_now[3], ideal_m_now, m_diff_now]]
+                h_sweep_m_vals += [[h_now, MC_results_now[3], ideal_m_now, m_diff_now]]
                 
                 ideal_e_now = -h_now * math.tanh(sweep_b*h_now)
                 e_diff_now = MC_results_now[7] - ideal_e_now
-                h_sweep_e_vals += [[sweep_T, h_now, MC_results_now[7], ideal_e_now, e_diff_now]]
+                h_sweep_e_vals += [[h_now, MC_results_now[7], ideal_e_now, e_diff_now]]
                 
                 ideal_susc_now = sweep_b * math.pow(1/math.cosh(sweep_b*h_now), 2)
                 susc_diff_now = MC_results_now[9] - ideal_susc_now
-                h_sweep_susc_vals += [[sweep_T, h_now, MC_results_now[9], ideal_susc_now, susc_diff_now]]
+                h_sweep_susc_vals += [[h_now, MC_results_now[9], ideal_susc_now, susc_diff_now]]
                 
                 ideal_cv_now = math.pow(sweep_b, 2) * math.pow(h_now, 2) * math.pow(1/math.cosh(sweep_b*h_now), 2)
                 cv_diff_now = MC_results_now[10] - ideal_cv_now
-                h_sweep_cv_vals += [[sweep_T, h_now, MC_results_now[10], ideal_cv_now, cv_diff_now]]
+                h_sweep_cv_vals += [[h_now, MC_results_now[10], ideal_cv_now, cv_diff_now]]
                 
                 h_now += h_step
         
@@ -256,19 +256,19 @@ def h_sweep(grid_in, h_min, h_max, sweep_Jx, sweep_Jy, sweep_T, MC_steps, points
                 
                 ideal_m_now = math.tanh(sweep_b*h_now)
                 m_diff_now = MC_results_now[3] - ideal_m_now
-                h_sweep_m_vals += [[sweep_T, h_now, MC_results_now[3], ideal_m_now, m_diff_now]]
+                h_sweep_m_vals += [[h_now, MC_results_now[3], ideal_m_now, m_diff_now]]
                 
                 ideal_e_now = -h_now * math.tanh(sweep_b*h_now)
                 e_diff_now = MC_results_now[7] - ideal_e_now
-                h_sweep_e_vals += [[sweep_T, h_now, MC_results_now[7], ideal_e_now, e_diff_now]]
+                h_sweep_e_vals += [[h_now, MC_results_now[7], ideal_e_now, e_diff_now]]
                 
                 ideal_susc_now = sweep_b * math.pow(1/math.cosh(sweep_b*h_now), 2)
                 susc_diff_now = MC_results_now[9] - ideal_susc_now
-                h_sweep_susc_vals += [[sweep_T, h_now, MC_results_now[9], ideal_susc_now, susc_diff_now]]
+                h_sweep_susc_vals += [[h_now, MC_results_now[9], ideal_susc_now, susc_diff_now]]
                 
                 ideal_cv_now = math.pow(sweep_b, 2) * math.pow(h_now, 2) * math.pow(1/math.cosh(sweep_b*h_now), 2)
                 cv_diff_now = MC_results_now[10] - ideal_cv_now
-                h_sweep_cv_vals += [[sweep_T, h_now, MC_results_now[10], ideal_cv_now, cv_diff_now]]
+                h_sweep_cv_vals += [[h_now, MC_results_now[10], ideal_cv_now, cv_diff_now]]
                 
                 h_now += h_step
     
@@ -460,6 +460,171 @@ def coup_sweep(kattam_in, Jx_min, Jx_max, Jy_min, Jy_max, h_over_range, T_over_r
     
     return (coup_sweep_mg_vals, coup_sweep_u_vals, coup_sweep_sscpt_vals, coup_sweep_spc_heat_vals)
 
+''' This does provide information for the 1NN case if we chose to do 1NN stuff, but that really
+    should be handled by the 1NN script. '''
+
+
+# This function provides the outputs (the relevant graphs and tables) for the 0NN case.
+def output_0NN(sweep_param, rooster_in, MC_amt, data_pt_amt, therm_step_amt, sweep_param_vals):
+    matplotlib.pyplot.close("all")
+    
+    if sweep_param == "h":
+        
+        h_init = sweep_param_vals[0]
+        h_final = sweep_param_vals[1]
+        Jx_h_sweep = sweep_param_vals[2]
+        Jy_h_sweep = sweep_param_vals[3]
+        T_h_sweep = sweep_param_vals[4]
+        b_h_sweep = 1.0/T_h_sweep
+        h_sweep_grids = h_sweep(rooster_in, h_init, h_final, Jx_h_sweep, Jy_h_sweep, T_h_sweep, MC_amt, data_pt_amt, therm_step_amt)
+        swept_h_range = numpy.linspace(h_init, h_final, MC_amt * 1000, endpoint = True)
+        
+        swept_h_m_grid = numpy.array(h_sweep_grids[0])
+        swept_h_e_grid = numpy.array(h_sweep_grids[1])
+        swept_h_susc_grid = numpy.array(h_sweep_grids[2])
+        swept_h_cv_grid = numpy.array(h_sweep_grids[3])
+        
+        swept_h_ext_field = swept_h_m_grid[:,0]
+        swept_h_m = swept_h_m_grid[:,1]
+        swept_h_ideal_m = numpy.tanh(b_h_sweep * swept_h_range)
+        swept_h_e = swept_h_e_grid[:,1]
+        swept_h_ideal_e = -swept_h_range * numpy.tanh(b_h_sweep * swept_h_range)
+        swept_h_susc = swept_h_susc_grid[:,1]
+        swept_h_ideal_susc = b_start * numpy.power(1/numpy.cosh(b_h_sweep*swept_h_range), 2.0)
+        swept_h_cv = swept_h_cv_grid[:,1]
+        swept_h_ideal_cv = math.pow(b_h_sweep, 2.0) * numpy.power(swept_h_range, 2.0) * numpy.power(1/numpy.cosh(b_h_sweep*swept_h_range), 2.0)
+        
+        print "T = %.4f, Jx = %.4f, Jy = %.4f" % (T_h_sweep, Jx_h_sweep, Jy_h_sweep)
+        print "                      "
+        print tabulate.tabulate(swept_h_m_grid, headers = ["Ext. Field", "Sim. <m>", "Calc. <m>", "<m> err."], floatfmt=".7f")
+        
+        print "                      "
+        print tabulate.tabulate(swept_h_e_grid, headers = ["Ext. Field", "Sim. <e>", "Calc. <e>", "<e> err."], floatfmt=".7f")
+        
+        print "                      "
+        print tabulate.tabulate(swept_h_susc_grid, headers = ["Ext. Field", u"Sim. \u03c7", u"Calc. \u03c7", u"\u03c7 err."], floatfmt=".7f")
+        
+        print "                      "
+        print tabulate.tabulate(swept_h_cv_grid, headers = ["Ext. Field", "Sim. c_v", "Calc. c_v", "c_v err."], floatfmt=".7f")
+        
+        matplotlib.pyplot.figure(1)
+        matplotlib.pyplot.suptitle("Per Site Magnetisation", family = "Gill Sans MT", fontsize = 16)
+        matplotlib.pyplot.xlabel(r"External Magnetic Field ($h$)", family = "Gill Sans MT")
+        matplotlib.pyplot.ylabel(r"Per Site Magnetisation ($\langle m \rangle$)", family = "Gill Sans MT")
+        matplotlib.pyplot.plot(swept_h_range, swept_h_ideal_m, linestyle = "-", color = "#2824A7")
+        matplotlib.pyplot.scatter(swept_h_ext_field, swept_h_m, color = "#FFAA00")
+        
+        matplotlib.pyplot.figure(2)
+        matplotlib.pyplot.suptitle("Average Per-Site Energy", family = "Gill Sans MT", fontsize = 16)
+        matplotlib.pyplot.xlabel(r"External Magnetic Field ($h$)", family = "Gill Sans MT")
+        matplotlib.pyplot.ylabel(r"Average Per-Site Energy ($\langle u \rangle$)", family = "Gill Sans MT")
+        matplotlib.pyplot.plot(swept_h_range, swept_h_ideal_e, linestyle = "-", color = "#2824A7")
+        matplotlib.pyplot.scatter(swept_h_ext_field, swept_h_e, color = "#FFAA00")
+        matplotlib.pyplot.show()
+        
+        matplotlib.pyplot.figure(3)
+        matplotlib.pyplot.suptitle("Susceptibility", family = "Gill Sans MT", fontsize = 16)
+        matplotlib.pyplot.xlabel(r"External Magnetic Field ($h$)", family = "Gill Sans MT")
+        matplotlib.pyplot.ylabel(r"Susceptibility ($\chi$)", family = "Gill Sans MT")
+        matplotlib.pyplot.plot(swept_h_range, swept_h_ideal_susc, linestyle = "-", color = "#2824A7")
+        matplotlib.pyplot.scatter(swept_h_ext_field, swept_h_susc, color = "#FFAA00")
+        matplotlib.pyplot.show()
+        
+        matplotlib.pyplot.figure(4)
+        matplotlib.pyplot.suptitle("Specific Heat at Constant Volume", family = "Gill Sans MT", fontsize = 16)
+        matplotlib.pyplot.xlabel(r"External Magnetic Field ($h$)", family = "Gill Sans MT")
+        matplotlib.pyplot.ylabel(r"Specific Heat at Constant Volume ($c_v$)", family = "Gill Sans MT")
+        matplotlib.pyplot.plot(swept_h_range, swept_h_ideal_cv, linestyle = "-", color = "#2824A7")
+        matplotlib.pyplot.scatter(swept_h_ext_field, swept_h_cv, color = "#FFAA00")
+        matplotlib.pyplot.show()
+        
+        return None
+    
+    elif sweep_param == "T":
+
+        T_init = sweep_param_vals[0]
+        T_final = sweep_param_vals[1]
+        h_T_sweep = sweep_param_vals[2]
+        Jx_T_sweep = sweep_param_vals[3]
+        Jy_T_sweep = sweep_param_vals[4]
+
+        T_sweep_grids = T_sweep(rooster_in, T_init, T_final, h_T_sweep, Jx_T_sweep, Jy_T_sweep, MC_amt, data_pt_amt, therm_step_amt)
+        swept_T_range = numpy.linspace(T_init, T_final, MC_amt * 1000, endpoint = True)
+        swept_b_range = numpy.linspace(1.0/T_final, 1.0/T_init, MC_amt * 1000, endpoint = True)
+        
+        swept_T_m_grid = numpy.array(T_sweep_grids[0])
+        swept_T_e_grid = numpy.array(T_sweep_grids[1])
+        swept_T_susc_grid = numpy.array(T_sweep_grids[2])
+        swept_T_cv_grid = numpy.array(T_sweep_grids[3])
+        
+        swept_T_vals = swept_T_m_grid[:,0]
+        swept_T_m = swept_T_m_grid[:,1]
+        swept_T_ideal_m = numpy.tanh(swept_b_range * h_T_sweep)
+        swept_T_e = swept_T_e_grid[:,1]
+        swept_T_ideal_e = -h_T_sweep * numpy.tanh(swept_b_range * h_T_sweep)
+        swept_T_susc = swept_T_susc_grid[:,1]
+        swept_T_ideal_susc = b_start * numpy.power(1/numpy.cosh(swept_b_range*h_T_sweep), 2.0)
+        swept_T_cv = swept_T_cv_grid[:,1]
+        swept_T_ideal_cv = numpy.power(swept_b_range, 2.0) * math.pow(h_T_sweep, 2.0) * numpy.power(1/numpy.cosh(swept_b_range*h_T_sweep), 2.0)
+        
+        print "T = %.4f, Jx = %.4f, Jy = %.4f" % (T_h_sweep, Jx_h_sweep, Jy_h_sweep)
+        print "                      "
+        print tabulate.tabulate(swept_T_m_grid, headers = ["Ext. Field", "Sim. <m>", "Calc. <m>", "<m> err."], floatfmt=".7f")
+        
+        print "                      "
+        print tabulate.tabulate(swept_T_e_grid, headers = ["Ext. Field", "Sim. <e>", "Calc. <e>", "<e> err."], floatfmt=".7f")
+        
+        print "                      "
+        print tabulate.tabulate(swept_T_susc_grid, headers = ["Ext. Field", u"Sim. \u03c7", u"Calc. \u03c7", u"\u03c7 err."], floatfmt=".7f")
+        
+        print "                      "
+        print tabulate.tabulate(swept_T_cv_grid, headers = ["Ext. Field", "Sim. c_v", "Calc. c_v", "c_v err."], floatfmt=".7f")
+        
+        matplotlib.pyplot.figure(1)
+        matplotlib.pyplot.suptitle("Per Site Magnetisation", family = "Gill Sans MT", fontsize = 16)
+        matplotlib.pyplot.xlabel(r"Temperature ($T$)", family = "Gill Sans MT")
+        matplotlib.pyplot.ylabel(r"Per Site Magnetisation ($\langle m \rangle$)", family = "Gill Sans MT")
+        matplotlib.pyplot.plot(swept_T_range, swept_T_ideal_m, linestyle = "-", color = "#2824A7")
+        matplotlib.pyplot.scatter(swept_T_vals, swept_T_m, color = "#FFAA00")
+        
+        matplotlib.pyplot.figure(2)
+        matplotlib.pyplot.suptitle("Average Per-Site Energy", family = "Gill Sans MT", fontsize = 16)
+        matplotlib.pyplot.xlabel(r"Temperature ($T$)", family = "Gill Sans MT")
+        matplotlib.pyplot.ylabel(r"Average Per-Site Energy ($\langle u \rangle$)", family = "Gill Sans MT")
+        matplotlib.pyplot.plot(swept_T_range, swept_T_ideal_e, linestyle = "-", color = "#2824A7")
+        matplotlib.pyplot.scatter(swept_T_vals, swept_T_e, color = "#FFAA00")
+        matplotlib.pyplot.show()
+        
+        matplotlib.pyplot.figure(3)
+        matplotlib.pyplot.suptitle("Susceptibility", family = "Gill Sans MT", fontsize = 16)
+        matplotlib.pyplot.xlabel(r"Temperature ($T$)", family = "Gill Sans MT")
+        matplotlib.pyplot.ylabel(r"Susceptibility ($\chi$)", family = "Gill Sans MT")
+        matplotlib.pyplot.plot(swept_T_range, swept_T_ideal_susc, linestyle = "-", color = "#2824A7")
+        matplotlib.pyplot.scatter(swept_T_vals, swept_T_susc, color = "#FFAA00")
+        matplotlib.pyplot.show()
+        
+        matplotlib.pyplot.figure(4)
+        matplotlib.pyplot.suptitle("Specific Heat at Constant Volume", family = "Gill Sans MT", fontsize = 16)
+        matplotlib.pyplot.xlabel(r"Temperature ($T$)", family = "Gill Sans MT")
+        matplotlib.pyplot.ylabel(r"Specific Heat at Constant Volume ($c_v$)", family = "Gill Sans MT")
+        matplotlib.pyplot.plot(swept_T_range, swept_T_ideal_cv, linestyle = "-", color = "#2824A7")
+        matplotlib.pyplot.scatter(swept_T_vals, swept_T_cv, color = "#FFAA00")
+        matplotlib.pyplot.show()
+    
+    else:
+        raise ValueError('sweep_param must be "h" or "T"')
+    
+    return None
+
+''' sweep_param_vals holds all of the sweep-related values:
+        * For h sweep, sweep_param_vals = [h_init, h_final, Jx_h_sweep, Jy_h_sweep, T_h_sweep]
+        * For T sweep, sweep_param_vals = [T_init, T_final, h_T_sweep, Jx_T_sweep, Jy_T_sweep]
+        * For J sweep, sweep_param_vals = [Jx_init, Jx_final, Jy_init, Jy_final, h_J_sweep, T_J_sweep]
+
+    Meanwhile, "rooster" is Dutch and Afrikaans for "grid". 
+    
+    I didn't give results for the 1NN case, since that's given by the 1NN script. '''
+
 
 # Here, we run the simulation. For testing, we also print the actual arrays; these commands are then commented out as necessary.
 print "Initial 2D Ising Grid:"
@@ -468,72 +633,8 @@ print_grid(initial_grid)
 print "                      "
 print "                      "
 
-h_sweep_grids = h_sweep(initial_grid, h_start, h_end, Jx_start, Jy_start, T_start, MC_sweeps, data_pts, MC_therm_steps)
 
-swept_h_m_grid = numpy.array(h_sweep_grids[0])
-swept_h_e_grid = numpy.array(h_sweep_grids[1])
-swept_h_susc_grid = numpy.array(h_sweep_grids[2])
-swept_h_cv_grid = numpy.array(h_sweep_grids[3])
-
-swept_h_range = numpy.linspace(h_start, h_end, MC_sweeps * 1000, endpoint = True)
-
-swept_h_T = swept_h_m_grid[:,0]
-swept_h_ext_field = swept_h_m_grid[:,1]
-
-swept_h_m = swept_h_m_grid[:,2]
-swept_h_ideal_m = numpy.tanh(b_start * swept_h_range)
-
-swept_h_e = swept_h_e_grid[:,2]
-swept_h_ideal_e = -swept_h_range * numpy.tanh(b_start * swept_h_range)
-
-swept_h_susc = swept_h_susc_grid[:,2]
-swept_h_ideal_susc = b_start * numpy.power(1/numpy.cosh(b_start*swept_h_range), 2.0)
-
-swept_h_cv = swept_h_cv_grid[:,2]
-swept_h_ideal_cv = math.pow(b_start, 2.0) * numpy.power(swept_h_range, 2.0) * numpy.power(1/numpy.cosh(b_start*swept_h_range), 2.0)
-
-print "                      "
-print tabulate.tabulate(swept_h_m_grid, headers = ["Temp.", "Ext. Field", "Sim. <m>", "Calc. <m>", "<m> err."], floatfmt=".7f")
-
-print "                      "
-print tabulate.tabulate(swept_h_e_grid, headers = ["Temp.", "Ext. Field", "Sim. <e>", "Calc. <e>", "<e> err."], floatfmt=".7f")
-
-print "                      "
-print tabulate.tabulate(swept_h_susc_grid, headers = ["Temp.", "Ext. Field", u"Sim. \u03c7", u"Calc. \u03c7", u"\u03c7 err."], floatfmt=".7f")
-
-print "                      "
-print tabulate.tabulate(swept_h_cv_grid, headers = ["Temp.", "Ext. Field", "Sim. c_v", "Calc. c_v", "c_v err."], floatfmt=".7f")
-
-matplotlib.pyplot.figure(1)
-matplotlib.pyplot.suptitle("Per Site Magnetisation", family = "Gill Sans MT", fontsize = 16)
-matplotlib.pyplot.xlabel(r"External Magnetic Field ($h$)", family = "Gill Sans MT")
-matplotlib.pyplot.ylabel(r"Per Site Magnetisation ($\langle m \rangle$)", family = "Gill Sans MT")
-matplotlib.pyplot.plot(swept_h_range, swept_h_ideal_m, linestyle = "-", color = "#2824A7")
-matplotlib.pyplot.scatter(swept_h_ext_field, swept_h_m, color = "#FFAA00")
-
-matplotlib.pyplot.figure(2)
-matplotlib.pyplot.suptitle("Average Per-Site Energy", family = "Gill Sans MT", fontsize = 16)
-matplotlib.pyplot.xlabel(r"External Magnetic Field ($h$)", family = "Gill Sans MT")
-matplotlib.pyplot.ylabel(r"Average Per-Site Energy ($\langle u \rangle$)", family = "Gill Sans MT")
-matplotlib.pyplot.plot(swept_h_range, swept_h_ideal_e, linestyle = "-", color = "#2824A7")
-matplotlib.pyplot.scatter(swept_h_ext_field, swept_h_e, color = "#FFAA00")
-matplotlib.pyplot.show()
-
-matplotlib.pyplot.figure(3)
-matplotlib.pyplot.suptitle("Susceptibility", family = "Gill Sans MT", fontsize = 16)
-matplotlib.pyplot.xlabel(r"External Magnetic Field ($h$)", family = "Gill Sans MT")
-matplotlib.pyplot.ylabel(r"Susceptibility ($\chi$)", family = "Gill Sans MT")
-matplotlib.pyplot.plot(swept_h_range, swept_h_ideal_susc, linestyle = "-", color = "#2824A7")
-matplotlib.pyplot.scatter(swept_h_ext_field, swept_h_susc, color = "#FFAA00")
-matplotlib.pyplot.show()
-
-matplotlib.pyplot.figure(4)
-matplotlib.pyplot.suptitle("Specific Heat at Constant Volume", family = "Gill Sans MT", fontsize = 16)
-matplotlib.pyplot.xlabel(r"External Magnetic Field ($h$)", family = "Gill Sans MT")
-matplotlib.pyplot.ylabel(r"Specific Heat at Constant Volume ($c_v$)", family = "Gill Sans MT")
-matplotlib.pyplot.plot(swept_h_range, swept_h_ideal_cv, linestyle = "-", color = "#2824A7")
-matplotlib.pyplot.scatter(swept_h_ext_field, swept_h_cv, color = "#FFAA00")
-matplotlib.pyplot.show()
+h_sweep_out = output_0NN("h", initial_grid, MC_sweeps, data_pts, MC_therm_steps, [h_start, h_end, Jx_start, Jy_start, T_start])
 
 
 # This section stores the time at the end of the program.
