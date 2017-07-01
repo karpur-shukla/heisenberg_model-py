@@ -6,7 +6,7 @@
     lattices generated. This is part of an attempt to recreate the weighted histogram analysis
     method (WHAM) seen in A. Ferrenberg & R. Swendsen, Phys. Rev. Lett. 61, 23 (1988) and
     A. Ferrenberg & R. Swendsen, Phys. Rev. Lett. 63, 12 (1989). We're specifically looking at the
-    two-state Ising model, i.e. with spins ±1/2.'''
+    two-state Ising model, i.e. with spins ±1/2. '''
 
 
 # This section imports the libraries necessary to run the program.
@@ -20,10 +20,10 @@ import time
 # This section stores the time at the start of the program.
 program_start_time = time.clock()
 
-'''Since we're interested in the amount of time the program will run in, we'll store the time at the
-   beginning of the program using time.clock(), and compare it to the time at the end (again using
-   time.clock(), applied to a different variable name. time.clock() just takes the time at a given
-   moment; it's up to us to store it properly.'''
+''' Since we're interested in the amount of time the program will run in, we'll store the time at the
+    beginning of the program using time.clock(), and compare it to the time at the end (again using
+    time.clock(), applied to a different variable name. time.clock() just takes the time at a given
+    moment; it's up to us to store it properly. '''
 
 
 # This section sets the simulation parameters.
@@ -31,10 +31,10 @@ x_len = 8              # x_len is the number of sites in each row.
 y_len = 8              # y_len is the number of rows in each column.
 size = x_len * y_len   # size simply keeps the total number of sites handy.
 
-MC_num = 1000000       # MC_num is the number of Monte Carlo updates.
+MC_num = 100000       # MC_num is the number of Monte Carlo updates.
 sweeps = 100           # sweeps is the number of parameter sweeps.
 hist_bin_size = 1      # hist_bin_size is the size of the bins of the histograms.
-MC_therm_steps = 10000 # MC_therm_steps is the number of initial thermalisation steps.
+MC_therm_steps = 100 # MC_therm_steps is the number of initial thermalisation steps.
 
 h_hist = 0.0           # h_hist is the histogram external field.
 T_hist = 2.5           # T_hist is the histogram temperature.
@@ -47,7 +47,7 @@ Jy_hist = 1.0          # Jy_hist is the histogram y-direction coupling constant.
 initial_grid = numpy.random.choice([-1, 1], size = [y_len, x_len])
 
 ''' Note that this is faster than my original choice of how to initialise the system: 
-    initial_grid = [[-1.0 if random.random() <= 0.5 else 1.0 for cube in xrange(x_len)] for row in xrange(y_len)]'''
+    initial_grid = [[-1.0 if random.random() <= 0.5 else 1.0 for cube in xrange(x_len)] for row in xrange(y_len)] '''
 
 
 # This function provides a printed version of the 2D Ising grid.
@@ -98,11 +98,7 @@ def MC_update(lat, h, Jx, Jy, T):
     E > 0, it suffices to compare the result of random.random() with exp(-2*beta*h*spin). This is 
     the standard thing we do with the Metropolis-Hastings algorithm, but exploiting the fact that
     exp(0) = 1 simplifies matters, since it lets us collapse the min(1, exp(-a)) comparison into a
-    single line.
-
-    Note that here, I iterate over the array size, rather than the array elements. This is because
-    I'm not sure how to call individual entries in the 2D array aside from listing their
-    positions.'''
+    single line. '''
 
 
 # This function retrieves the magnetisation and the energy.
@@ -227,4 +223,4 @@ print "Program run time per site per MC sweep: %6g seconds" % (total_program_tim
 
 ''' Note: To find out how long the program takes, we take the difference of time.clock() evaluated at
     the beginning of the program and at the end of the program. Here, we take the time at the end of
-    the program, and define the total program time.'''
+    the program, and define the total program time. '''
