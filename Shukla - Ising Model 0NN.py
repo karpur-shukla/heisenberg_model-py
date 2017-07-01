@@ -3,7 +3,7 @@
 ''' Here, we create a static 2D N-by-M Ising grid of spins up and down, an update mechanism to
     update the spin at every site, and finally include the presence of an external magnetic field in
     the grids. We're specifically looking at the two-state Ising model, i.e. with spins ±1/2, but
-    with no inter-site coupling.'''
+    with no inter-site coupling. '''
 
 
 # This section imports the libraries necessary to run the program.
@@ -18,10 +18,10 @@ import tabulate
 # This section stores the time at the start of the program.
 program_start_time = time.clock()
 
-'''Since we're interested in the amount of time the program will run in, we'll store the time at the
-   beginning of the program using time.clock(), and compare it to the time at the end (again using
-   time.clock(), applied to a different variable name. time.clock() just takes the time at a given
-   moment; it's up to us to store it properly.'''
+''' Since we're interested in the amount of time the program will run in, we'll store the time at the
+    beginning of the program using time.clock(), and compare it to the time at the end (again using
+    time.clock(), applied to a different variable name. time.clock() just takes the time at a given
+    moment; it's up to us to store it properly. '''
 
 
 # This section sets the simulation parameters.
@@ -54,7 +54,7 @@ data_pts = 40                # data_pts is the number of sweep data points for t
 initial_grid = numpy.random.choice([-1, 1], size = [y_len, x_len])
 
 ''' Note that this is faster than my original choice of how to initialise the system: 
-    initial_grid = [[-1.0 if random.random() <= 0.5 else 1.0 for cube in xrange(x_len)] for row in xrange(y_len)]'''
+    initial_grid = [[-1.0 if random.random() <= 0.5 else 1.0 for cube in xrange(x_len)] for row in xrange(y_len)] '''
 
 
 # This function provides a printed version of the 2D Ising grid.
@@ -644,6 +644,6 @@ print "                      "
 print "Program run time: %f seconds" % (total_program_time)
 print "Program run time per site per MC sweep: %f seconds" % (total_program_time/(MC_sweeps*data_pts))
 
-'''Note: To find out how long the program takes, we take the difference of time.clock() evaluated at
-   the beginning of the program and at the end of the program. Here, we take the time at the end of
-   the program, and define the total program time.'''
+''' Note: To find out how long the program takes, we take the difference of time.clock() evaluated at
+    the beginning of the program and at the end of the program. Here, we take the time at the end of
+    the program, and define the total program time. '''
