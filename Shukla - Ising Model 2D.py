@@ -3,7 +3,7 @@
 ''' Here, we create a static 2D N-by-M Ising grid of spins up and down, an update mechanism to
     update the spin at every site, and finally include the presence of an inter-spin coupling and an
     external magnetic field in the grids. We're specifically looking at the two-state Ising model,
-    i.e. with spins ±1/2.'''
+    i.e. with spins ±1/2. '''
 
 
 # This section imports the libraries necessary to run the program.
@@ -21,7 +21,7 @@ program_start_time = time.clock()
 ''' Since we're interested in the amount of time the program will run in, we'll store the time at the
     beginning of the program using time.clock(), and compare it to the time at the end (again using
     time.clock(), applied to a different variable name. time.clock() just takes the time at a given
-    moment; it's up to us to store it properly.'''
+    moment; it's up to us to store it properly. '''
 
 
 # This section sets the simulation parameters.
@@ -53,7 +53,7 @@ Jy_end = 1.0           # Jy_end is the ending y-direction coupling constant.
 initial_grid = numpy.random.choice([-1, 1], size = [y_len, x_len])
 
 ''' Note that this is faster than my original choice of how to initialise the system: 
-    initial_grid = [[-1.0 if random.random() <= 0.5 else 1.0 for cube in xrange(x_len)] for row in xrange(y_len)]'''
+    initial_grid = [[-1.0 if random.random() <= 0.5 else 1.0 for cube in xrange(x_len)] for row in xrange(y_len)] '''
 
 
 # This function provides a printed version of the 2D Ising grid.
@@ -109,11 +109,7 @@ def MC_update(grid, h, Jx, Jy, T):
     E > 0, it suffices to compare the result of random.random() with exp(-2*beta*h*spin). This is 
     the standard thing we do with the Metropolis-Hastings algorithm, but exploiting the fact that
     exp(0) = 1 simplifies matters, since it lets us collapse the min(1, exp(-a)) comparison into a
-    single line.
-
-    Note that here, I iterate over the array size, rather than the array elements. This is because
-    I'm not sure how to call individual entries in the 2D array aside from listing their
-    positions.'''
+    single line. '''
 
 
 # This function performs the MC thermalisation.
@@ -140,7 +136,7 @@ def many_MC(lat, MC_iter, mu, cc_x, cc_y, t):
     now_lat = lat
     
     for update in xrange(MC_iter):
-        now_update = MC_update(lat, mu, cc_x, cc_y, t)
+        now_update = MC_update(now_lat, mu, cc_x, cc_y, t)
         now_lat = now_update[0]
         
         MC_M += [now_update[1]]
@@ -217,7 +213,7 @@ def sweep_0NN(lat_i_0NN, h_min_0NN, h_max_0NN, T_min_0NN, T_max_0NN, MC_iter_0NN
     return (sweep_0NN_m_vals, sweep_0NN_u_vals, sweep_0NN_chi_vals, sweep_0NN_cv_vals)
 
 ''' This does provide information for the 0NN case if we chose to do 0NN stuff, but that really
-    should be handled by the 0NN script.'''
+    should be handled by the 0NN script. '''
 
 
 # This function sweeps across values of the external field and temperature for the 1NN 2D case.
@@ -316,4 +312,4 @@ print "Program run time per site per MC sweep: %6g seconds" % (total_program_tim
 
 ''' Note: To find out how long the program takes, we take the difference of time.clock() evaluated at
     the beginning of the program and at the end of the program. Here, we take the time at the end of
-    the program, and define the total program time.'''
+    the program, and define the total program time. '''
