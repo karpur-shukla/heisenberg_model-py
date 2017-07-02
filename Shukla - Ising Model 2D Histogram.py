@@ -105,16 +105,16 @@ def MC_update(lat, h, Jx, Jy, T):
 def lat_props(trel, mu, ccx, ccy, temp):
     net_M = 0.0
     net_E = 0.0
-    x_size = len(trel[0])
-    y_size = len(trel)
-    sites = float(x_size * y_size)
+    array_x_size = len(trel[0])
+    array_y_size = len(trel)
+    sites = float(array_x_size * array_y_size)
 
-    for y_pt in xrange(y_size):
-        for x_pt in xrange(x_size):
+    for y_pt in xrange(array_y_size):
+        for x_pt in xrange(array_x_size):
             net_M += trel[y_pt][x_pt]
             net_E += -mu * trel[y_pt][x_pt]
-            net_E += -ccx * trel[y_pt][(x_pt+1) % x_size] * trel[y_pt][x_pt]
-            net_E += -ccy * trel[(y_pt+1) % y_size][x_pt] * trel[y_pt][x_pt]
+            net_E += -ccx * trel[y_pt][(x_pt+1) % array_x_size] * trel[y_pt][x_pt]
+            net_E += -ccy * trel[(y_pt+1) % array_y_size][x_pt] * trel[y_pt][x_pt]
 
     lat_m = net_M/sites
     lat_e = net_E/sites
