@@ -18,10 +18,10 @@ import tabulate
 # This section stores the time at the start of the program.
 program_start_time = time.clock()
 
-''' Since we're interested in the amount of time the program will run in, we'll store the time at the
-    beginning of the program using time.clock(), and compare it to the time at the end (again using
-    time.clock(), applied to a different variable name. time.clock() just takes the time at a given
-    moment; it's up to us to store it properly. '''
+''' Since we're interested in the amount of time the program will run in, we'll store the time at
+    the beginning of the program using time.clock(), and compare it to the time at the end (again
+    using time.clock(), applied to a different variable name. time.clock() just takes the time at a
+    given moment; it's up to us to store it properly. '''
 
 
 # This section sets the simulation parameters.
@@ -354,6 +354,6 @@ print "                      "
 print "Program run time: %f seconds" % (total_program_time)
 print "Program run time per site per MC sweep: %6g seconds" % (total_program_time / (MC_num * MC_therm_steps * sweeps * size))
 
-''' Note: To find out how long the program takes, we take the difference of time.clock() evaluated at
-    the beginning of the program and at the end of the program. Here, we take the time at the end of
-    the program, and define the total program time. '''
+''' Note: To find out how long the program takes, we take the difference of time.clock() evaluated
+    at the beginning of the program and at the end of the program. Here, we take the time at the end
+    of the program, and define the total program time. '''
