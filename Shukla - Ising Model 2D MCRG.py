@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 ''' Here, we create a static 2D N-by-M Ising grid of spins up and down, an update mechanism to
-    update the spin at every site, and finally include the presence of an inter-spin coupling and an
-    external magnetic field in the grids. This script then performs a few real-space renormalisation
-    steps and examines the nearest-neighbour two-point disconnected correlation function,
-    G^(2)(i, i+1) = <x_i x_(i+1)>, at various temperatures. We're specifically looking at the
+    update the spin at every site, and finally include the presence of an inter-spin coupling and
+    an external magnetic field in the grids. This script then performs real-space renormalisations,
+    provides the nearest-neighbour two-point disconnected correlation function (given by
+    G^(2)(i, i+1) = <x_i x_(i+1)>) at various temperatures, and examines the renormalisation group
+    flow of G by examining the eigenvalues of the transfer matrix. We're specifically looking at the
     two-state Ising model, i.e. with spins ±1/2.'''
 
 
@@ -19,10 +20,10 @@ import time
 # This section stores the time at the start of the program.
 program_start_time = time.clock()
 
-'''Since we're interested in the amount of time the program will run in, we'll store the time at the
-   beginning of the program using time.clock(), and compare it to the time at the end (again using
-   time.clock(), applied to a different variable name. time.clock() just takes the time at a given
-   moment; it's up to us to store it properly.'''
+''' Since we're interested in the amount of time the program will run in, we'll store the time at
+    the beginning of the program using time.clock(), and compare it to the time at the end (again
+    using time.clock(), applied to a different variable name. time.clock() just takes the time at a
+    given moment; it's up to us to store it properly. '''
 
 
 # This section sets the simulation parameters.
@@ -113,7 +114,7 @@ def MC_update(lat, h, Jx, Jy, T):
 
     Note that here, I iterate over the array size, rather than the array elements. This is because
     I'm not sure how to call individual entries in the 2D array aside from listing their
-    positions.'''
+    positions. '''
 
 
 # This function defines the kth nearest-neighbour two-point Green function.
@@ -339,6 +340,6 @@ print "                      "
 print "Program run time: %f seconds" % (total_program_time)
 print "Program run time per site per MC sweep: %6g seconds" % (total_program_time / (MC_num * sweeps * size))
 
-'''Note: To find out how long the program takes, we take the difference of time.clock() evaluated at
-   the beginning of the program and at the end of the program. Here, we take the time at the end of
-   the program, and define the total program time.'''
+''' Note: To find out how long the program takes, we take the difference of time.clock() evaluated
+    at the beginning of the program and at the end of the program. Here, we take the time at the end
+    of the program, and define the total program time. '''
