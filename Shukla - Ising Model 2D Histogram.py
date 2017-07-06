@@ -2,8 +2,11 @@
 
 ''' Here, we create a static 2D N-by-M Ising grid of spins up and down, an update mechanism to
     update the spin at every site, and finally include the presence of an inter-spin coupling and an
-    external magnetic field in the grids. We're specifically looking at the two-state Ising model,
-    i.e. with spins ±1/2. '''
+    external magnetic field in the grids. This script then performs a histogram analysis of the
+    lattices generated. This is part of an attempt to recreate the weighted histogram analysis
+    method (WHAM) seen in A. Ferrenberg & R. Swendsen, Phys. Rev. Lett. 61, 23 (1988) and
+    A. Ferrenberg & R. Swendsen, Phys. Rev. Lett. 63, 12 (1989). We're specifically looking at the
+    two-state Ising model, i.e. with spins ±1/2. '''
 
 
 # This section imports the libraries necessary to run the program.
@@ -12,7 +15,6 @@ import matplotlib
 import numpy
 import random
 import time
-import tabulate
 
 
 # This section stores the time at the start of the program.
@@ -30,23 +32,16 @@ y_len = 8                    # y_len is the number of rows in each column.
 size = x_len * y_len         # size simply keeps the total number of sites handy.
 
 MC_num = 1000000             # MC_num is the number of Monte Carlo updates.
-sweeps = 50                  # sweeps is the number of parameter sweeps.
+hist_bin_size = 1            # hist_bin_size is the size of the bins of the histograms.
 MC_therm_steps = 10000       # MC_therm_steps is the number of thermalisation steps.
 
-h_start = 0.0                # h_start is the starting external field.
-h_end = 0.0                  # h_end is the ending external field.
+h_hist = 0.0                 # h_hist is the histogram external field.
 
-T_start = 0.1                # T_start is the starting temperature.
-T_end = 5.1                  # T_end is the ending temperature.
+T_hist = 2.5                 # T_hist is the histogram temperature.
+b_hist = 1/T_hist            # b_hist is the value of beta corresponding to the histogram temperature.
 
-b_start = 1/T_start          # b_start is the value of beta corresponding to the starting temperature.
-b_end = 1/T_end              # b_end is the value of beta corresponding to the ending temperature.
-
-Jx_start = 1.0               # Jx_start is the starting x-direction coupling constant.
-Jx_end = 1.0                 # Jx_end is the ending x-direction coupling constant.
-
-Jy_start = 1.0               # Jy_start is the starting y-direction coupling constant.
-Jy_end = 1.0                 # Jy_end is the ending y-direction coupling constant.
+Jx_hist = 1.0                # Jx_hist is the histogram x-direction coupling constant.
+Jy_hist = 1.0                # Jy_hist is the histogram y-direction coupling constant.
 
 kNN_2pt_G_dist = 1           # kNN_2pt_G_dist is the distance at which we're looking at the kth nearest-neighbour two-point Green function.
 kNN_2pt_G_conn = False       # kNN_2pt_G_conn tells us whether we're looking at the two-point disconnected or the two-point connected Green function.
@@ -216,140 +211,35 @@ def many_MC(array, MC_iter, ext_field, cc_x, cc_y, tepl, therm_steps_per_sample,
     cv = (math.pow(b, 2) * (avg_E2 - math.pow(avg_E, 2))) / array_sites. '''
 
 
-# This function defines the hyperbolic secant squared function, used in the ideal values, via numpy.
-def sech2(params):
-    sech_params = 1/numpy.cosh(params)
-    sech2_params = numpy.power(sech_params, 2.0)
+# This section creates and plots the histograms of the average total energy and average total magnetisation of each generated lattice.
+def MC_hist(grid, MC_steps, mag_mom, coupl_x, coupl_y, tymherr, bin_size, hist_therm_steps, MC_hist_G_dist, MC_hist_G_corr):
+    MC_results = many_MC(grid, MC_steps, mag_mom, coupl_x, coupl_y, tymherr, hist_therm_steps, MC_hist_G_dist, MC_hist_G_corr)
 
-    return sech2_params
+    MC_int_M_array = numpy.rint(MC_results[8])
+    M_range = numpy.arange(min(MC_int_M_array), max(MC_int_M_array) + bin_size + 1, bin_size)
+    M_hist = numpy.histogram(MC_int_M_array, bins = M_range)
+    M_hist_x = numpy.delete(M_hist[1], len(M_hist[1]) - 1, axis = None)
+    M_hist_y = M_hist[0]
 
-
-# This function gives us the ideal values for <m>, <u>, the susceptibility, and the specific heat for the 0NN case.
-def ideal_vals_0NN(ideal_T_0NN, ideal_h_0NN):
-    ideal_b_0NN = 1.0 / ideal_T_0NN
-    ideal_bh_0NN = ideal_b_0NN * ideal_h_0NN
-
-    ideal_0NN_m = numpy.tanh(ideal_bh_0NN)
-    ideal_0NN_u = -ideal_h_0NN * numpy.tanh(ideal_bh_0NN)
-    ideal_0NN_sus = ideal_b_0NN * sech2(ideal_bh_0NN)
-    ideal_0NN_cv = numpy.power(ideal_bh_0NN, 2.0) * sech2(ideal_bh_0NN)
-
-    return (ideal_0NN_m, ideal_0NN_u, ideal_0NN_sus, ideal_0NN_cv)
-
-
-# This function sweeps across values of the external field and temperature for the 0NN case.
-def sweep_0NN(lat_i_0NN, h_min_0NN, h_max_0NN, T_min_0NN, T_max_0NN, MC_iter_0NN, points_0NN, therm_steps_0NN, G_dist_0NN, G_conn_0NN):
-    sweep_0NN_m_vals = []
-    sweep_0NN_u_vals = []
-    sweep_0NN_chi_vals = []
-    sweep_0NN_cv_vals = []
-
-    h_now_0NN = h_min_0NN
-    T_now_0NN = T_min_0NN
+    MC_int_E_array = numpy.rint(MC_results[9])
+    E_range = numpy.arange(min(MC_int_E_array), max(MC_int_E_array) + bin_size + 1, bin_size)
+    E_hist = numpy.histogram(MC_int_E_array, bins = E_range)
+    E_hist_x = numpy.delete(E_hist[1], len(E_hist[1]) - 1, axis = None)
+    E_hist_y = E_hist[0]
     
-    h_step_0NN = float((h_max_0NN - h_min_0NN) / points_0NN)
-    T_step_0NN = float((T_max_0NN - T_min_0NN) / points_0NN)
-    
-    for point_0NN in xrange(points_0NN + 1):
-        MC_results_now_0NN = many_MC(lat_i_0NN, MC_iter_0NN, h_now_0NN, 0.0, 0.0, T_now_0NN, therm_steps_0NN, G_dist_0NN, G_conn_0NN)
-        ideal_vals_now_0NN = ideal_vals_0NN(T_now_0NN, h_now_0NN)
-
-        ideal_m_now_0NN = ideal_vals_now_0NN[0]
-        m_diff_now_0NN = ideal_m_now_0NN - MC_results_now_0NN[2]
-        sweep_0NN_m_vals += [[T_now_0NN, h_now_0NN, ideal_m_now_0NN, m_diff_now_0NN]]
-
-        ideal_u_now_0NN = ideal_vals_now_0NN[1]
-        u_diff_now_0NN = ideal_u_now_0NN - MC_results_now_0NN[4]
-        sweep_0NN_u_vals += [[T_now_0NN, h_now_0NN, ideal_u_now_0NN, u_diff_now_0NN]]
-
-        ideal_chi_now_0NN = ideal_vals_now_0NN[2]
-        chi_diff_now_0NN = ideal_chi_now_0NN - MC_results_now_0NN[6]
-        sweep_0NN_chi_vals += [[T_now_0NN, h_now_0NN, ideal_chi_now_0NN, chi_diff_now_0NN]]
-
-        ideal_cv_now_0NN = ideal_vals_now_0NN[3]
-        cv_diff_now_0NN = ideal_cv_now_0NN - MC_results_now_0NN[7]
-        sweep_0NN_cv_vals += [[T_now_0NN, h_now_0NN, ideal_cv_now_0NN, cv_diff_now_0NN]]
-
-        h_now_0NN += h_step_0NN
-        T_now_0NN += T_step_0NN
-
-    return (sweep_0NN_m_vals, sweep_0NN_u_vals, sweep_0NN_chi_vals, sweep_0NN_cv_vals)
-
-''' This does provide information for the 0NN case if we chose to do 0NN stuff, but that really
-    should be handled by the 0NN script. '''
-
-
-# This function sweeps across values of the external field and temperature for the 1NN 2D case.
-def sweep_1NN(lat_i_1NN, h_min_1NN, h_max_1NN, Jx_min_1NN, Jx_max_1NN, Jy_min_1NN, Jy_max_1NN, T_min_1NN, T_max_1NN, MC_iter_1NN, points_1NN, therm_steps_1NN, G_dist_1NN, G_conn_1NN):
-    sweep_vals = []
-
-    h_now_1NN = h_min_1NN
-    Jx_now_1NN = Jx_min_1NN
-    Jy_now_1NN = Jy_min_1NN
-    T_now_1NN = T_min_1NN
-
-    h_step_1NN = float((h_max_1NN - h_min_1NN) / points_1NN)
-    Jx_step_1NN = float((Jx_max_1NN - Jx_min_1NN) / points_1NN)
-    Jy_step_1NN = float((Jy_max_1NN - Jy_min_1NN) / points_1NN)
-    T_step_1NN = float((T_max_1NN - T_min_1NN) / points_1NN)
-    
-    point_1NN = 0
-    
-    while point_1NN <= points_1NN:
-        MC_results_now_1NN = many_MC(lat_i_1NN, MC_iter_1NN, h_now_1NN, Jx_now_1NN, Jy_now_1NN, T_now_1NN, therm_steps_1NN, G_dist_1NN, G_conn_1NN)
-        results_now = [T_now_1NN, h_now_1NN, Jx_now_1NN, Jy_now_1NN, MC_results_now_1NN[2], MC_results_now_1NN[4], MC_results_now_1NN[5], MC_results_now_1NN[6], MC_results_now_1NN[7]]
-        sweep_vals += [results_now]
-        
-        h_now_1NN += h_step_1NN
-        Jx_now_1NN += Jx_step_1NN
-        Jy_now_1NN += Jy_step_1NN
-        T_now_1NN += T_step_1NN
-        point_1NN += 1
-    
-    return sweep_vals
-
-
-# This function provides the outputs (the relevant graphs and tables) for the 1NN 2D case.
-def output_1NN(grid_i_1NN, h_i_1NN, h_f_1NN, Jx_i_1NN, Jx_f_1NN, Jy_i_1NN, Jy_f_1NN, T_i_1NN, T_f_1NN, MC_num_1NN, pts_1NN, thrm_stps_1NN, G_len_1NN, disc_or_conn_1NN):
-    vals_1NN = numpy.array(sweep_1NN(grid_i_1NN, h_i_1NN, h_f_1NN, Jx_i_1NN, Jx_f_1NN, Jy_i_1NN, Jy_f_1NN, T_i_1NN, T_f_1NN, MC_num_1NN, pts_1NN, thrm_stps_1NN, G_len_1NN, disc_or_conn_1NN))
-
-    T_vals_1NN = vals_1NN[:,0]
-    m_vals_1NN = vals_1NN[:,4]
-    e_vals_1NN = vals_1NN[:,5]
-    sus_vals_1NN = vals_1NN[:,7]
-    cv_vals_1NN = vals_1NN[:,8]
-    
-    print tabulate.tabulate(vals_1NN, headers = ["Temp.", "Ext. Field", "x-dir. cc", "y-dir. cc", "Sim. <m>", "Sim. <e>", u"Sim. \u03c7", "Sim. c_v"], floatfmt=".7f")
-
     matplotlib.pyplot.figure(1)
-    matplotlib.pyplot.suptitle("Per Site Magnetisation", family = "Gill Sans MT", fontsize = 16)
-    matplotlib.pyplot.xlabel(r"Temperature ($T$)", family = "Gill Sans MT")
-    matplotlib.pyplot.ylabel(r"Per Site Magnetisation ($\langle m \rangle$)", family = "Gill Sans MT")
-    matplotlib.pyplot.scatter(T_vals_1NN, m_vals_1NN)
+    matplotlib.pyplot.suptitle("Magnetisation Histogram", family = "Gill Sans MT", fontsize = 16)
+    matplotlib.pyplot.xlabel(r"Total Magnetisation ($\langle M \rangle$)", family = "Gill Sans MT")
+    matplotlib.pyplot.bar(M_hist_x, M_hist_y)
     matplotlib.pyplot.show()
 
     matplotlib.pyplot.figure(2)
-    matplotlib.pyplot.suptitle("Per Site Energy", family = "Gill Sans MT", fontsize = 16)
-    matplotlib.pyplot.xlabel(r"Temperature ($T$)", family = "Gill Sans MT")
-    matplotlib.pyplot.ylabel(r"Per Site Energy ($\langle u \rangle$)", family = "Gill Sans MT")
-    matplotlib.pyplot.scatter(T_vals_1NN, e_vals_1NN)
+    matplotlib.pyplot.suptitle("Energy Histogram", family = "Gill Sans MT", fontsize = 16)
+    matplotlib.pyplot.xlabel(r"Total Energy ($\langle E \rangle$)", family = "Gill Sans MT")
+    matplotlib.pyplot.bar(E_hist_x, E_hist_y)
     matplotlib.pyplot.show()
 
-    matplotlib.pyplot.figure(3)
-    matplotlib.pyplot.suptitle("Magnetic Susceptibility", family = "Gill Sans MT", fontsize = 16)
-    matplotlib.pyplot.xlabel(r"Temperature ($T$)", family = "Gill Sans MT")
-    matplotlib.pyplot.ylabel(r"Magnetic Susceptibility ($\chi$)", family = "Gill Sans MT")
-    matplotlib.pyplot.scatter(T_vals_1NN, sus_vals_1NN)
-    matplotlib.pyplot.show()
-
-    matplotlib.pyplot.figure(4)
-    matplotlib.pyplot.suptitle("Specific Heat (at Constant Volume and Number of Particles)", family = "Gill Sans MT", fontsize = 16)
-    matplotlib.pyplot.xlabel(r"Temperature ($T$)", family = "Gill Sans MT")
-    matplotlib.pyplot.ylabel(r"Specific Heat ($c_v$)", family = "Gill Sans MT")
-    matplotlib.pyplot.scatter(T_vals_1NN, cv_vals_1NN)
-    matplotlib.pyplot.show()
-
-    return None
+    return (MC_results[8], MC_results[9], M_hist_x, M_hist_y, E_hist_x, E_hist_y)
 
 
 # Here, we run the simulation. For testing, we also print the actual arrays; these commands are then commented out as necessary.
@@ -358,19 +248,18 @@ print "                      "
 print_grid(initial_grid)
 print "                      "
 print "                      "
-updated_grid = many_MC(initial_grid, MC_num, h_start, Jx_start, Jy_start, T_start, 10, 1, False)
+updated_grid = many_MC(array = initial_grid, MC_iter = 10, ext_field = 0.0, cc_x = 1.0, cc_y = 1.0, tepl = 2.0, therm_steps_per_sample = 10, many_MC_G_dist = 1, many_MC_G_corr = False)
 print "Updated 2D Ising Grid:"
 print "                      "
 print_grid(updated_grid[0])
-output_1NN(initial_grid, h_start, h_end, Jx_start, Jx_end, Jy_start, Jy_start, T_start, T_end, MC_num, sweeps, MC_therm_steps, kNN_2pt_G_dist, kNN_2pt_G_conn)
-
+output_1NN = MC_hist(initial_grid, MC_num, h_hist, Jx_hist, Jy_hist, T_hist, hist_bin_size, MC_therm_steps, kNN_2pt_G_dist, kNN_2pt_G_conn)
 
 # This section stores the time at the end of the program.
 program_end_time = time.clock()
 total_program_time = program_end_time - program_start_time
 print "                      "
 print "Program run time: %f seconds" % (total_program_time)
-print "Program run time per site per MC sweep: %6g seconds" % (total_program_time / (MC_num * MC_therm_steps * sweeps * size))
+print "Program run time per site per MC sweep: %6g seconds" % (total_program_time / (MC_num * MC_therm_steps * size))
 
 ''' Note: To find out how long the program takes, we take the difference of time.clock() evaluated
     at the beginning of the program and at the end of the program. Here, we take the time at the end
