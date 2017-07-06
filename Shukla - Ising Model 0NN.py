@@ -558,7 +558,7 @@ def output_0NN(sweep_param, rooster_in, MC_amt, data_pt_amt, therm_step_amt, swe
         matplotlib.pyplot.scatter(swept_h_ext_field, swept_h_cv, color = "#FFAA00")
         matplotlib.pyplot.show()
         
-        return None
+        return
     
     elif sweep_param == "T":
 
