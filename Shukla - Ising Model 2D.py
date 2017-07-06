@@ -349,7 +349,7 @@ def output_1NN(grid_i_1NN, h_i_1NN, h_f_1NN, Jx_i_1NN, Jx_f_1NN, Jy_i_1NN, Jy_f_
     matplotlib.pyplot.scatter(T_vals_1NN, cv_vals_1NN)
     matplotlib.pyplot.show()
 
-    return None
+    return
 
 
 # Here, we run the simulation. For testing, we also print the actual arrays; these commands are then commented out as necessary.
