@@ -636,7 +636,7 @@ def output_0NN(sweep_param, rooster_in, MC_amt, data_pt_amt, therm_step_amt, swe
     else:
         raise ValueError('sweep_param must be "h" or "T"')
     
-    return None
+    return
 
 ''' sweep_param_vals holds all of the sweep-related values:
         * For h sweep, sweep_param_vals = [h_init, h_final, Jx_h_sweep, Jy_h_sweep, T_h_sweep]
