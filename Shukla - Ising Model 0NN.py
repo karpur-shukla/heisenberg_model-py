@@ -168,6 +168,13 @@ def lat_props(trel, mu, ccx, ccy, temp, dist, conn):
     else:
         raise TypeError("'conn' must be of type bool")
 
+''' Note that this gives either the kth nearest-neighbour two-point connected correlation function
+    (i.e. G^(2)_c(i, i+k) = <x_i x_(i+k)> - <x_i><x_(i+k)>) or the kth nearest-neighbour two-point
+    disconnected correlation function (i.e. G^(2)(i, i+k) = <x_i x_(i+k)>), depending on whether or
+    not we have conn = True or conn = False. Since <x_i> = <x_(i+k)> = m (the average per-site
+    magnetisation), the two-point connected correlation function just substitutes m^2 for
+    <x_i><x_(i+k)>. '''
+
 
 # This function performs the MC thermalisation.
 def MC_thermal(collec, therm_steps, mag_field, couplx, couply, t):
@@ -217,7 +224,6 @@ def many_MC(array, MC_iter, ext_field, cc_x, cc_y, tepl, therm_steps_per_sample,
         sus = b * numpy.var(MC_M, axis = None) / (points ** 2.0)
     
     return (now_lat, avg_M, avg_m, avg_E, avg_e, avg_G, sus, cv, MC_M, MC_E, MC_G)
-
 
 ''' We need to do this for the susceptibility in the case of h = 0 because in this specific case, we
     have no interactions whatsoever. Thus, we're looking at the standard deviation of a set of ±1
