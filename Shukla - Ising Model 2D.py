@@ -151,6 +151,13 @@ def lat_props(trel, mu, ccx, ccy, temp, dist, conn):
     else:
         raise TypeError("'conn' must be of type bool")
 
+''' Note that this gives either the kth nearest-neighbour two-point connected correlation function
+    (i.e. G^(2)_c(i, i+k) = <x_i x_(i+k)> - <x_i><x_(i+k)>) or the kth nearest-neighbour two-point
+    disconnected correlation function (i.e. G^(2)(i, i+k) = <x_i x_(i+k)>), depending on whether or
+    not we have conn = True or conn = False. Since <x_i> = <x_(i+k)> = m (the average per-site
+    magnetisation), the two-point connected correlation function just substitutes m^2 for
+    <x_i><x_(i+k)>. '''
+
 
 # This function performs the MC thermalisation.
 def MC_thermal(collec, therm_steps, mag_field, couplx, couply, t):
@@ -192,10 +199,21 @@ def many_MC(array, MC_iter, ext_field, cc_x, cc_y, tepl, therm_steps_per_sample,
     avg_e = float(avg_E / points)
     avg_G = numpy.mean(MC_G, axis = None)
     
-    sus = b * numpy.var(MC_M, axis = None) / points
     cv = math.pow(b, 2) * numpy.var(MC_E, axis = None) / points
+
+    if ext_field != 0.0:
+        sus = b * numpy.var(MC_M, axis = None) / points
+    else:
+        sus = b * numpy.var(MC_M, axis = None) / (points ** 2.0)
     
     return (now_lat, avg_M, avg_m, avg_E, avg_e, avg_G, sus, cv, MC_M, MC_E, MC_G)
+
+''' We need to do this for the susceptibility in the case of h = 0 because in this specific case, we
+    have no interactions whatsoever. Thus, we're looking at the standard deviation of a set of ±1
+    values picked at random; since there's no scale dependence, multiplying by array_sites in this
+    specific case will give us an extraneous factor of array_sites. To write cv in terms of the
+    total energy rather than the per-site energy, we have:
+    cv = (math.pow(b, 2) * (avg_E2 - math.pow(avg_E, 2))) / array_sites. '''
 
 
 # This function defines the hyperbolic secant squared function, used in the ideal values, via numpy.
