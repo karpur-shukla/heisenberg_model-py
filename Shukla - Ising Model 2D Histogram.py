@@ -254,6 +254,7 @@ print "                      "
 print_grid(updated_grid[0])
 output_1NN = MC_hist(initial_grid, MC_num, h_hist, Jx_hist, Jy_hist, T_hist, hist_bin_size, MC_therm_steps, kNN_2pt_G_dist, kNN_2pt_G_conn)
 
+
 # This section stores the time at the end of the program.
 program_end_time = time.clock()
 total_program_time = program_end_time - program_start_time
